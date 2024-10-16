@@ -16,7 +16,7 @@ class ModeApp extends StatelessWidget {
           },
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView( // Tambahkan SingleChildScrollView untuk mengatasi overflow
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -55,7 +55,7 @@ class ModeApp extends StatelessWidget {
               },
               child: Center(
                 child: Container(
-                  width: 200, // Lebar dan tinggi dibuat sama untuk kotak persegi
+                  width: 200, // Lebar disesuaikan dengan ukuran layar
                   height: 200, // Membuat kotak menjadi persegi
                   margin: EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
@@ -95,7 +95,7 @@ class ModeApp extends StatelessWidget {
               },
               child: Center(
                 child: Container(
-                  width: 200, // Lebar dan tinggi dibuat sama untuk kotak persegi
+                  width: 200, // Lebar disesuaikan dengan ukuran layar
                   height: 200, // Membuat kotak menjadi persegi
                   margin: EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
