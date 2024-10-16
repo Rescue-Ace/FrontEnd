@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class ApiService {
   // Fungsi login mock
@@ -22,5 +23,17 @@ class ApiService {
       'name': 'John Doe',
       'email': 'test@example.com',
     };
+  }
+
+  // Fungsi untuk mendapatkan daftar Cabang Damkar (mock)
+  Future<List<String>> getCabangDamkar() async {
+    await Future.delayed(Duration(seconds: 1)); // Simulasi delay API
+    return ['Cabang A', 'Cabang B', 'Cabang C', 'Cabang D'];
+  }
+
+  // Fungsi untuk mendapatkan daftar Cabang Polsek (mock)
+  Future<List<String>> getCabangPolsek() async {
+    await Future.delayed(Duration(seconds: 1)); // Simulasi delay API
+    return ['Polsek A', 'Polsek B', 'Polsek C', 'Polsek D'];
   }
 }
