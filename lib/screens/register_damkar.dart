@@ -12,12 +12,47 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-  
-  // Opsi untuk Cabang Damkar dari API
-  List<String> _cabangDamkar = ['Cabang A', 'Cabang B', 'Cabang C'];
-  String? _selectedCabangDamkar;
+  ApiService apiService = ApiService();
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Key untuk validasi form
+  List<String> _cabangDamkar = [];
+  String? _selectedCabangDamkar;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCabangDamkar();
+  }
+
+  void _loadCabangDamkar() async {
+    List<String> cabang = await apiService.getCabangDamkar();
+    setState(() {
+      _cabangDamkar = cabang;
+      _isLoading = false;
+    });
+  }
+
+  void _register() async {
+    if (_passwordController.text == _confirmPasswordController.text) {
+      Map<String, dynamic> newUser = {
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+        'role': 'damkar',
+        'cabang': _selectedCabangDamkar,
+      };
+      await apiService.registerUser(newUser);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    } else {
+      // Handle error jika password tidak cocok
+    }
+  }
+
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // validasi form
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +75,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey, // Menggunakan Form untuk validasi
+          key: _formKey, 
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -189,7 +224,6 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // Setelah validasi, arahkan ke halaman login dan simpan data
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => LoginScreen()),

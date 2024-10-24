@@ -1,84 +1,59 @@
 import 'package:flutter/material.dart';
-import 'register_polisi.dart'; // Import halaman Register Polisi
-import 'register_damkar.dart'; // Import halaman Register Damkar
+import 'register_polisi.dart';
+import 'register_damkar.dart';
 
 class ModeApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white, // Warna AppBar sama dengan background
-        elevation: 0, // Menghilangkan bayangan AppBar
+        backgroundColor: Colors.white,
+        elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Color(0xFF4872B1)), // Tombol back berwarna sesuai
+          icon: Icon(Icons.arrow_back, color: Color(0xFF4872B1)),
           onPressed: () {
-            Navigator.of(context).pop(); // Kembali ke halaman sebelumnya
+            Navigator.of(context).pop();
           },
         ),
       ),
-      body: SingleChildScrollView( // Tambahkan SingleChildScrollView untuk mengatasi overflow
+      body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center, // Memusatkan isi secara horizontal
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 20), // Jarak agar logo lebih naik ke atas
-            // Logo di atas
+            SizedBox(height: 20),
             Center(
-              child: Image.asset(
-                'assets/images/logo2.png', // Gambar logo di assets
-                width: 60,
-                height: 60,
-              ),
+              child: Image.asset('assets/images/logo2.png', width: 60, height: 60),
             ),
-            SizedBox(height: 20), // Jarak antara logo dan teks
-            // Teks Pilih Mode Aplikasi
+            SizedBox(height: 20),
             Center(
               child: Text(
                 'Pilih Mode Aplikasi',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF4872B1), // Warna teks sesuai tema
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF4872B1)),
               ),
             ),
-            SizedBox(height: 30), // Jarak antara teks dan kotak aplikasi
+            SizedBox(height: 30),
             // Tombol untuk Polisi
             GestureDetector(
               onTap: () {
-                // Navigasi ke halaman register polisi
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterPolisi()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterPolisi()));
               },
               child: Center(
                 child: Container(
-                  width: 200, // Lebar disesuaikan dengan ukuran layar
-                  height: 200, // Membuat kotak menjadi persegi
+                  width: 200,
+                  height: 200,
                   margin: EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Color(0xFFA1BED6), // Warna background kotak
+                    color: Color(0xFFA1BED6),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        'assets/images/polisi.png', // Gambar Polisi
-                        width: 100,
-                        height: 100,
-                      ),
+                      Image.asset('assets/images/polisi.png', width: 100, height: 100),
                       SizedBox(height: 10),
-                      Text(
-                        'Polisi',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white, // Warna teks putih
-                        ),
-                      ),
+                      Text('Polisi', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                     ],
                   ),
                 ),
@@ -87,38 +62,23 @@ class ModeApp extends StatelessWidget {
             // Tombol untuk Damkar
             GestureDetector(
               onTap: () {
-                // Navigasi ke halaman register damkar
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegisterDamkar()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterDamkar()));
               },
               child: Center(
                 child: Container(
-                  width: 200, // Lebar disesuaikan dengan ukuran layar
-                  height: 200, // Membuat kotak menjadi persegi
+                  width: 200,
+                  height: 200,
                   margin: EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Color(0xFFA1BED6), // Warna background kotak
+                    color: Color(0xFFA1BED6),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Image.asset(
-                        'assets/images/damkar.png', // Gambar Damkar
-                        width: 100,
-                        height: 100,
-                      ),
+                      Image.asset('assets/images/damkar.png', width: 100, height: 100),
                       SizedBox(height: 10),
-                      Text(
-                        'Damkar',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white, // Warna teks putih
-                        ),
-                      ),
+                      Text('Damkar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                     ],
                   ),
                 ),
@@ -127,7 +87,6 @@ class ModeApp extends StatelessWidget {
           ],
         ),
       ),
-      backgroundColor: Colors.white, // Background layar putih
     );
   }
 }

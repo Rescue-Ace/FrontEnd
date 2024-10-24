@@ -12,14 +12,47 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
+  ApiService apiService = ApiService();
 
-  // Opsi statis untuk Jabatan
+  List<String> _cabangPolsek = [];
   List<String> _jabatan = ['Komandan', 'Anggota'];
-  String? _selectedJabatan;
-
-  // Opsi untuk Cabang Polsek dari API
-  List<String> _cabangPolsek = ['Cabang A', 'Cabang B', 'Cabang C'];
   String? _selectedCabangPolsek;
+  String? _selectedJabatan;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCabangPolsek();
+  }
+
+  void _loadCabangPolsek() async {
+    List<String> cabang = await apiService.getCabangPolsek();
+    setState(() {
+      _cabangPolsek = cabang;
+      _isLoading = false;
+    });
+  }
+
+  void _register() async {
+    if (_passwordController.text == _confirmPasswordController.text) {
+      Map<String, dynamic> newUser = {
+        'name': _nameController.text,
+        'email': _emailController.text,
+        'password': _passwordController.text,
+        'role': 'polisi',
+        'jabatan': _selectedJabatan,
+        'cabang': _selectedCabangPolsek,
+      };
+      await apiService.registerUser(newUser);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+      );
+    }
+  }
+
+///////////////////////////////////////////////////////////////////////////////
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Key untuk validasi form
 

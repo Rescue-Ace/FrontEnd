@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart'; // Import untuk TapGestureRecognizer
-import '../service/api_service.dart'; // Import API Service
-import 'mode_app.dart'; // Import halaman ModeApp (Register)
+import 'package:flutter/gestures.dart';
+import '../service/api_service.dart'; 
+import 'home_page.dart'; 
+import 'mode_app.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -11,7 +12,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final ApiService _apiService = ApiService(); // Instance ApiService
+  final ApiService _apiService = ApiService(); 
 
   void _login() async {
     String email = _emailController.text;
@@ -20,7 +21,13 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       var response = await _apiService.loginUser(email, password);
       print('Login successful: $response');
-      // Setelah login berhasil, arahkan ke halaman lain atau simpan data
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(user: response['user']),
+        ),
+      );
     } catch (e) {
       print('Login failed: $e');
     }
@@ -30,66 +37,66 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SingleChildScrollView( // Agar layar bisa di-scroll ketika keyboard muncul
+      body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: 60), // Memberi jarak dari atas layar
+              SizedBox(height: 60),
               Center(
                 child: Image.asset(
-                  'assets/images/login.png', // Gambar untuk login
+                  'assets/images/login.png', 
                   width: 200,
                   height: 200,
                 ),
               ),
-              SizedBox(height: 10), // Jarak antara gambar dan teks "Login"
+              SizedBox(height: 10),
               Center(
                 child: Text(
-                  'Login', // Teks di bawah gambar
+                  'Login',
                   style: TextStyle(
-                    fontSize: 24, // Ukuran teks
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF4872B1), // Warna teks
+                    color: Color(0xFF4872B1), 
                   ),
                 ),
               ),
-              SizedBox(height: 20), // Jarak antara teks "Login" dan form input
+              SizedBox(height: 20),
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  labelStyle: TextStyle(color: Color(0xFF4872B1)), // Warna teks label normal
+                  labelStyle: TextStyle(color: Color(0xFF4872B1)), 
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color:  Color(0xFFA1BED6)), // Garis biru saat tidak aktif
+                    borderSide: BorderSide(color:  Color(0xFFA1BED6)), 
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color:  Color(0xFFA1BED6), width: 2.0), // Garis biru tebal saat aktif
+                    borderSide: BorderSide(color:  Color(0xFFA1BED6), width: 2.0), 
                   ),
                 ),
               ),
               SizedBox(height: 10),
               TextField(
                 controller: _passwordController,
-                obscureText: true, // Menyembunyikan teks saat mengetik password
+                obscureText: true, 
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  labelStyle: TextStyle(color: Color(0xFF4872B1)), // Warna teks hijau untuk Password
+                  labelStyle: TextStyle(color: Color(0xFF4872B1)), 
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFA1BED6)), // Garis biru saat tidak aktif
+                    borderSide: BorderSide(color: Color(0xFFA1BED6)), 
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFA1BED6), width: 1.5), // Garis biru tebal saat aktif
+                    borderSide: BorderSide(color: Color(0xFFA1BED6), width: 1.5), 
                   ),
                 ),
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: _login, // Memanggil fungsi login saat tombol ditekan
+                onPressed: _login, 
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF4872B1), // Warna tombol
+                  backgroundColor: Color(0xFF4872B1), 
                   padding: EdgeInsets.symmetric(vertical: 15),
                   textStyle: TextStyle(fontSize: 18),
                   foregroundColor: Colors.white,
@@ -101,14 +108,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: RichText(
                   text: TextSpan(
                     text: "Don't have an account? ",
-                    style: TextStyle(color: Color(0xFF4872B1)), // Warna teks normal
+                    style: TextStyle(color: Color(0xFF4872B1)), 
                     children: <TextSpan>[
                       TextSpan(
                         text: 'Sign Up',
-                        style: TextStyle(color: Color(0xFFA1BED6)), // Warna "Sign Up"
+                        style: TextStyle(color: Color(0xFFA1BED6)), 
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            // Navigasi ke halaman ModeApp (Register)
                             Navigator.push(
                               context,
                               MaterialPageRoute(builder: (context) => ModeApp()),
