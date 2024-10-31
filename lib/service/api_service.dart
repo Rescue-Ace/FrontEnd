@@ -52,30 +52,69 @@ class ApiService {
   }
 
   // Fungsi untuk mendapatkan cabang Damkar
-  Future<List<String>> getCabangDamkar() async {
+  Future<List<Map<String, dynamic>>> getCabangDamkar() async {
     final url = Uri.parse('$baseUrl/Damkar/PosDamkar');
 
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return List<String>.from(data.map((item) => item['name'])); // Parsing jika cabang berupa objek
+      return List<Map<String, dynamic>>.from(data); // Parsing jika cabang berupa objek
     } else {
       throw Exception('Failed to fetch cabang damkar: ${response.reasonPhrase}');
     }
   }
 
   // Fungsi untuk mendapatkan cabang Polsek
-  Future<List<String>> getCabangPolsek() async {
+  Future<List<Map<String, dynamic>>> getCabangPolsek() async {
     final url = Uri.parse('$baseUrl/Polisi/PosPolisi');
-
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return List<String>.from(data.map((item) => item['name'])); // Parsing jika cabang berupa objek
+      return List<Map<String, dynamic>>.from(data);
     } else {
-      throw Exception('Failed to fetch cabang polsek: ${response.reasonPhrase}');
+      throw Exception('Failed to fetch cabang polsek');
     }
   }
+
+    // Fungsi untuk mendapatkan data Damkar berdasarkan ID
+  Future<Map<String, dynamic>> getDamkarById(int idDamkar) async {
+    final url = Uri.parse('$baseUrl/user/Damkar/$idDamkar');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to fetch Damkar data');
+    }
+  }
+
+  // Fungsi untuk mendapatkan data Polisi berdasarkan ID
+  Future<Map<String, dynamic>> getPolisiById(int idPolisi) async {
+    final url = Uri.parse('$baseUrl/user/Polisi/$idPolisi');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to fetch Polisi data');
+    }
+  }
+
+  // Fungsi untuk mendapatkan riwayat kebakaran
+  Future<List<Map<String, dynamic>>> getKebakaranHistory() async {
+    final url = Uri.parse('$baseUrl/Kebakaran');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      return List<Map<String, dynamic>>.from(json.decode(response.body));
+    } else {
+      throw Exception('Failed to fetch Kebakaran history');
+    }
+  }
+  
 }
+
+////////////////////////////////////////////////////////////////////
+

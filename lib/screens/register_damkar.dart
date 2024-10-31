@@ -15,8 +15,8 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
   final TextEditingController _confirmPasswordController = TextEditingController();
   ApiService apiService = ApiService();
 
-  List<String> _cabangDamkar = [];
-  String? _selectedCabangDamkar;
+  List<Map<String, dynamic>> _cabangDamkar = [];
+  int? _selectedCabangDamkar;
   bool _isLoading = true;
 
   @override
@@ -26,11 +26,15 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
   }
 
   void _loadCabangDamkar() async {
-    List<String> cabang = await apiService.getCabangDamkar();
-    setState(() {
-      _cabangDamkar = cabang;
-      _isLoading = false;
-    });
+    try {
+      List<Map<String, dynamic>> cabang = await apiService.getCabangDamkar();
+      setState(() {
+        _cabangDamkar = cabang;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading Damkar branches: $e");
+    }
   }
 
   void _register() async {
@@ -51,10 +55,8 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
         );
       } catch (e) {
         print('Registration failed: $e');
-        // Tambahkan notifikasi atau dialog jika gagal
       }
     } else {
-      // Handle error jika password tidak cocok
       print('Password tidak cocok');
     }
   }
@@ -166,7 +168,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                 },
               ),
               SizedBox(height: 10),
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<int>(
                 value: _selectedCabangDamkar,
                 decoration: InputDecoration(
                   labelText: 'Cabang Damkar',
@@ -181,10 +183,10 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                   ),
                 ),
                 dropdownColor: Colors.white,
-                items: _cabangDamkar.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value, style: TextStyle(color: textColor)),
+                items: _cabangDamkar.map((branch) {
+                  return DropdownMenuItem<int>(
+                    value: branch['id_pos_damkar'],
+                    child: Text(branch['alamat'], style: TextStyle(color: textColor)),
                   );
                 }).toList(),
                 onChanged: (newValue) {
@@ -245,7 +247,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    _register(); // Panggil fungsi register
+                    _register();
                   }
                 },
                 style: ElevatedButton.styleFrom(

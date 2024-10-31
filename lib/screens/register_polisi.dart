@@ -9,15 +9,15 @@ class RegisterPolisi extends StatefulWidget {
 
 class _RegisterPolisiState extends State<RegisterPolisi> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _telpController = TextEditingController(); // Tambahkan controller untuk nomor telepon
+  final TextEditingController _telpController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   ApiService apiService = ApiService();
 
-  List<String> _cabangPolsek = [];
+  List<Map<String, dynamic>> _cabangPolsek = [];
   List<String> _jabatan = ['Komandan', 'Anggota'];
-  String? _selectedCabangPolsek;
+  int? _selectedCabangPolsek; // ID polsek sebagai integer
   String? _selectedJabatan;
   bool _isLoading = true;
 
@@ -28,7 +28,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
   }
 
   void _loadCabangPolsek() async {
-    List<String> cabang = await apiService.getCabangPolsek();
+    List<Map<String, dynamic>> cabang = await apiService.getCabangPolsek();
     setState(() {
       _cabangPolsek = cabang;
       _isLoading = false;
@@ -39,15 +39,15 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
     if (_passwordController.text == _confirmPasswordController.text) {
       Map<String, dynamic> newUser = {
         'nama': _nameController.text,
-        'telp': _telpController.text, // Tambahkan nomor telepon
+        'telp': _telpController.text,
         'id_polsek': _selectedCabangPolsek,
-        'komandan': _selectedJabatan == 'Komandan', // Komandan jika true, anggota jika false
+        'komandan': _selectedJabatan == 'Komandan',
         'email': _emailController.text,
         'password': _passwordController.text,
       };
 
       try {
-        await apiService.registerPolisi(newUser); // Gunakan API service untuk register
+        await apiService.registerPolisi(newUser);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => LoginScreen()),
@@ -56,12 +56,11 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
         print('Registration failed: $e');
       }
     } else {
-      // Handle error jika password tidak cocok
       print('Passwords do not match');
     }
   }
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Key untuk validasi form
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -86,7 +85,6 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
         child: Form(
           key: _formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
@@ -108,7 +106,6 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 ),
               ),
               SizedBox(height: 30),
-              // Input Nama
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -129,7 +126,6 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 },
               ),
               SizedBox(height: 10),
-              // Input Nomor Telepon
               TextFormField(
                 controller: _telpController,
                 decoration: InputDecoration(
@@ -150,7 +146,6 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 },
               ),
               SizedBox(height: 10),
-              // Input Email
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -171,8 +166,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 },
               ),
               SizedBox(height: 10),
-              // Dropdown Cabang Polsek
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<int>(
                 value: _selectedCabangPolsek,
                 decoration: InputDecoration(
                   labelText: 'Cabang Polsek',
@@ -187,10 +181,10 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                   ),
                 ),
                 dropdownColor: Colors.white,
-                items: _cabangPolsek.map((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value, style: TextStyle(color: textColor)),
+                items: _cabangPolsek.map((cabang) {
+                  return DropdownMenuItem<int>(
+                    value: cabang['id_pos_damkar'],
+                    child: Text(cabang['alamat'], style: TextStyle(color: textColor)),
                   );
                 }).toList(),
                 onChanged: (newValue) {
@@ -206,7 +200,6 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 },
               ),
               SizedBox(height: 10),
-              // Dropdown Jabatan
               DropdownButtonFormField<String>(
                 value: _selectedJabatan,
                 decoration: InputDecoration(
@@ -222,7 +215,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                   ),
                 ),
                 dropdownColor: Colors.white,
-                items: _jabatan.map((String value) {
+                items: _jabatan.map((value) {
                   return DropdownMenuItem<String>(
                     value: value,
                     child: Text(value, style: TextStyle(color: textColor)),
@@ -241,7 +234,6 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 },
               ),
               SizedBox(height: 10),
-              // Input Password
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
@@ -263,7 +255,6 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 },
               ),
               SizedBox(height: 10),
-              // Input Konfirmasi Password
               TextFormField(
                 controller: _confirmPasswordController,
                 obscureText: true,
@@ -285,7 +276,6 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 },
               ),
               SizedBox(height: 20),
-              // Tombol Register
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
