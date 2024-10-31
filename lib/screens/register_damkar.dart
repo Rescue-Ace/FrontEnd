@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart'; // Import halaman login
-import '../service/api_service.dart'; // Import API Service
+import 'login_screen.dart'; 
+import '../service/api_service.dart'; 
 
 class RegisterDamkar extends StatefulWidget {
   @override
@@ -16,7 +16,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
   ApiService apiService = ApiService();
 
   List<Map<String, dynamic>> _cabangDamkar = [];
-  int? _selectedCabangDamkar;
+  int? _selectedCabangDamkarId;
   bool _isLoading = true;
 
   @override
@@ -25,24 +25,30 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
     _loadCabangDamkar();
   }
 
+  
   void _loadCabangDamkar() async {
     try {
       List<Map<String, dynamic>> cabang = await apiService.getCabangDamkar();
+      print("Cabang Damkar data: $cabang"); 
       setState(() {
         _cabangDamkar = cabang;
         _isLoading = false;
       });
     } catch (e) {
       print("Error loading Damkar branches: $e");
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
+ 
   void _register() async {
     if (_passwordController.text == _confirmPasswordController.text) {
       Map<String, dynamic> newUser = {
         'nama': _nameController.text,
         'telp': _telpController.text,
-        'id_pos_damkar': _selectedCabangDamkar,
+        'id_pos_damkar': _selectedCabangDamkarId, 
         'email': _emailController.text,
         'password': _passwordController.text,
       };
@@ -81,185 +87,187 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
           },
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Center(
-                child: Image.asset(
-                  'assets/images/logo2.png',
-                  width: 80,
-                  height: 80,
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Center(
+                      child: Image.asset(
+                        'assets/images/logo2.png',
+                        width: 80,
+                        height: 80,
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Center(
+                      child: Text(
+                        'Registrasi Damkar',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: textColor,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 30),
+                    TextFormField(
+                      controller: _nameController,
+                      decoration: InputDecoration(
+                        labelText: 'Nama',
+                        labelStyle: TextStyle(color: textColor),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor, width: 2),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Nama wajib diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      controller: _telpController,
+                      decoration: InputDecoration(
+                        labelText: 'Nomor Telepon',
+                        labelStyle: TextStyle(color: textColor),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor, width: 2),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Nomor telepon wajib diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      controller: _emailController,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                        labelStyle: TextStyle(color: textColor),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor, width: 2),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email wajib diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    DropdownButtonFormField<int>(
+                      value: _selectedCabangDamkarId,
+                      decoration: InputDecoration(
+                        labelText: 'Cabang Damkar',
+                        labelStyle: TextStyle(color: textColor),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor, width: 2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      dropdownColor: Colors.white,
+                      items: _cabangDamkar.map((branch) {
+                        return DropdownMenuItem<int>(
+                          value: branch['id_pos_damkar'], 
+                          child: Text(branch['alamat'], style: TextStyle(color: textColor)), 
+                        );
+                      }).toList(),
+                      onChanged: (newValue) {
+                        setState(() {
+                          _selectedCabangDamkarId = newValue;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Pilih cabang damkar';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        labelStyle: TextStyle(color: textColor),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor, width: 2),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Password wajib diisi';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 10),
+                    TextFormField(
+                      controller: _confirmPasswordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Confirm Password',
+                        labelStyle: TextStyle(color: textColor),
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: boxBorderColor, width: 2),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value != _passwordController.text) {
+                          return 'Password konfirmasi harus sama';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          _register();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF4872B1),
+                        padding: EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: Text('Register', style: TextStyle(fontSize: 18, color: buttonTextColor)),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 20),
-              Center(
-                child: Text(
-                  'Registrasi Damkar',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-              ),
-              SizedBox(height: 30),
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: 'Nama',
-                  labelStyle: TextStyle(color: textColor),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Nama wajib diisi';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-              TextFormField(
-                controller: _telpController,
-                decoration: InputDecoration(
-                  labelText: 'Nomor Telepon',
-                  labelStyle: TextStyle(color: textColor),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Nomor telepon wajib diisi';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-              TextFormField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  labelText: 'Email',
-                  labelStyle: TextStyle(color: textColor),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Email wajib diisi';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-              DropdownButtonFormField<int>(
-                value: _selectedCabangDamkar,
-                decoration: InputDecoration(
-                  labelText: 'Cabang Damkar',
-                  labelStyle: TextStyle(color: textColor),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                dropdownColor: Colors.white,
-                items: _cabangDamkar.map((branch) {
-                  return DropdownMenuItem<int>(
-                    value: branch['id_pos_damkar'],
-                    child: Text(branch['alamat'], style: TextStyle(color: textColor)),
-                  );
-                }).toList(),
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedCabangDamkar = newValue;
-                  });
-                },
-                validator: (value) {
-                  if (value == null) {
-                    return 'Pilih cabang damkar';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-              TextFormField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  labelStyle: TextStyle(color: textColor),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Password wajib diisi';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 10),
-              TextFormField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: 'Confirm Password',
-                  labelStyle: TextStyle(color: textColor),
-                  border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2),
-                  ),
-                ),
-                validator: (value) {
-                  if (value == null || value != _passwordController.text) {
-                    return 'Password konfirmasi harus sama';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    _register();
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFF4872B1),
-                  padding: EdgeInsets.symmetric(vertical: 15),
-                ),
-                child: Text('Register', style: TextStyle(fontSize: 18, color: buttonTextColor)),
-              ),
-            ],
-          ),
-        ),
-      ),
+            ),
       backgroundColor: backgroundColor,
     );
   }

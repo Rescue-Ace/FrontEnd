@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = 'https://2551-182-253-50-100.ngrok-free.app';
+  final String baseUrl = 'https://careful-stunning-snake.ngrok-free.app';
 
   // Fungsi login dengan backend
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
@@ -59,24 +59,27 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return List<Map<String, dynamic>>.from(data); // Parsing jika cabang berupa objek
+      print("Data received from API: $data"); 
+      return List<Map<String, dynamic>>.from(data);
     } else {
       throw Exception('Failed to fetch cabang damkar: ${response.reasonPhrase}');
     }
   }
 
-  // Fungsi untuk mendapatkan cabang Polsek
-  Future<List<Map<String, dynamic>>> getCabangPolsek() async {
-    final url = Uri.parse('$baseUrl/Polisi/PosPolisi');
+    Future<List<Map<String, dynamic>>> getCabangPolsek() async {
+    final url = Uri.parse('$baseUrl/Polisi/Polsek');
+
     final response = await http.get(url);
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      print("Data received from API: $data"); 
       return List<Map<String, dynamic>>.from(data);
     } else {
-      throw Exception('Failed to fetch cabang polsek');
+      throw Exception('Failed to fetch cabang damkar: ${response.reasonPhrase}');
     }
   }
+
 
     // Fungsi untuk mendapatkan data Damkar berdasarkan ID
   Future<Map<String, dynamic>> getDamkarById(int idDamkar) async {
