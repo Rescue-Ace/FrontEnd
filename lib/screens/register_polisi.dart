@@ -9,6 +9,7 @@ class RegisterPolisi extends StatefulWidget {
 
 class _RegisterPolisiState extends State<RegisterPolisi> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _telpController = TextEditingController(); // Tambahkan controller untuk nomor telepon
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
@@ -37,38 +38,44 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
   void _register() async {
     if (_passwordController.text == _confirmPasswordController.text) {
       Map<String, dynamic> newUser = {
-        'name': _nameController.text,
+        'nama': _nameController.text,
+        'telp': _telpController.text, // Tambahkan nomor telepon
+        'id_polsek': _selectedCabangPolsek,
+        'komandan': _selectedJabatan == 'Komandan', // Komandan jika true, anggota jika false
         'email': _emailController.text,
         'password': _passwordController.text,
-        'role': 'polisi',
-        'jabatan': _selectedJabatan,
-        'cabang': _selectedCabangPolsek,
       };
-      await apiService.registerUser(newUser);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
+
+      try {
+        await apiService.registerPolisi(newUser); // Gunakan API service untuk register
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
+      } catch (e) {
+        print('Registration failed: $e');
+      }
+    } else {
+      // Handle error jika password tidak cocok
+      print('Passwords do not match');
     }
   }
-
-///////////////////////////////////////////////////////////////////////////////
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // Key untuk validasi form
 
   @override
   Widget build(BuildContext context) {
-    final Color backgroundColor = Color(0xFFF7F7F7); // Warna latar belakang
-    final Color boxBorderColor = Color(0xFFA1BED6); // Warna border box
-    final Color textColor = Color(0xFF4872B1); // Warna teks di dalam box
-    final Color buttonTextColor = Colors.white; // Warna teks tombol register
+    final Color backgroundColor = Color(0xFFF7F7F7);
+    final Color boxBorderColor = Color(0xFFA1BED6);
+    final Color textColor = Color(0xFF4872B1);
+    final Color buttonTextColor = Colors.white;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: backgroundColor, // Pastikan warna AppBar sama dengan background
-        elevation: 0, // Hilangkan bayangan pada AppBar
+        backgroundColor: backgroundColor,
+        elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textColor), // Tombol back
+          icon: Icon(Icons.arrow_back, color: textColor),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -77,14 +84,14 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey, // Menggunakan Form untuk validasi
+          key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
                 child: Image.asset(
-                  'assets/images/logo2.png', // Pastikan gambar logo sudah ada di folder assets
+                  'assets/images/logo2.png',
                   width: 80,
                   height: 80,
                 ),
@@ -96,7 +103,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: textColor, // Warna teks judul
+                    color: textColor,
                   ),
                 ),
               ),
@@ -106,12 +113,12 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 controller: _nameController,
                 decoration: InputDecoration(
                   labelText: 'Nama',
-                  labelStyle: TextStyle(color: textColor), // Warna teks dalam box
+                  labelStyle: TextStyle(color: textColor),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor), // Warna border box
+                    borderSide: BorderSide(color: boxBorderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2), // Warna border saat fokus
+                    borderSide: BorderSide(color: boxBorderColor, width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -122,17 +129,38 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 },
               ),
               SizedBox(height: 10),
+              // Input Nomor Telepon
+              TextFormField(
+                controller: _telpController,
+                decoration: InputDecoration(
+                  labelText: 'Nomor Telepon',
+                  labelStyle: TextStyle(color: textColor),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: boxBorderColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: boxBorderColor, width: 2),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nomor telepon wajib diisi';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 10),
               // Input Email
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  labelStyle: TextStyle(color: textColor), // Warna teks dalam box
+                  labelStyle: TextStyle(color: textColor),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor), // Warna border box
+                    borderSide: BorderSide(color: boxBorderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2), // Warna border saat fokus
+                    borderSide: BorderSide(color: boxBorderColor, width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -148,9 +176,9 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 value: _selectedCabangPolsek,
                 decoration: InputDecoration(
                   labelText: 'Cabang Polsek',
-                  labelStyle: TextStyle(color: textColor), // Warna teks dalam dropdown
+                  labelStyle: TextStyle(color: textColor),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor), // Warna border box
+                    borderSide: BorderSide(color: boxBorderColor),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -183,9 +211,9 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 value: _selectedJabatan,
                 decoration: InputDecoration(
                   labelText: 'Jabatan',
-                  labelStyle: TextStyle(color: textColor), // Warna teks dalam dropdown
+                  labelStyle: TextStyle(color: textColor),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor), // Warna border box
+                    borderSide: BorderSide(color: boxBorderColor),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   focusedBorder: OutlineInputBorder(
@@ -219,12 +247,12 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  labelStyle: TextStyle(color: textColor), // Warna teks dalam box
+                  labelStyle: TextStyle(color: textColor),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor), // Warna border box
+                    borderSide: BorderSide(color: boxBorderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2), // Warna border saat fokus
+                    borderSide: BorderSide(color: boxBorderColor, width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -241,12 +269,12 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Confirm Password',
-                  labelStyle: TextStyle(color: textColor), // Warna teks dalam box
+                  labelStyle: TextStyle(color: textColor),
                   border: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor), // Warna border box
+                    borderSide: BorderSide(color: boxBorderColor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: boxBorderColor, width: 2), // Warna border saat fokus
+                    borderSide: BorderSide(color: boxBorderColor, width: 2),
                   ),
                 ),
                 validator: (value) {
@@ -261,11 +289,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    // Setelah validasi, arahkan ke halaman login dan simpan data
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
-                    );
+                    _register();
                   }
                 },
                 style: ElevatedButton.styleFrom(

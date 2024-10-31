@@ -9,6 +9,7 @@ class RegisterDamkar extends StatefulWidget {
 
 class _RegisterDamkarState extends State<RegisterDamkar> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _telpController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
@@ -35,24 +36,30 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
   void _register() async {
     if (_passwordController.text == _confirmPasswordController.text) {
       Map<String, dynamic> newUser = {
-        'name': _nameController.text,
+        'nama': _nameController.text,
+        'telp': _telpController.text,
+        'id_pos_damkar': _selectedCabangDamkar,
         'email': _emailController.text,
         'password': _passwordController.text,
-        'role': 'damkar',
-        'cabang': _selectedCabangDamkar,
       };
-      await apiService.registerUser(newUser);
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-      );
+
+      try {
+        await apiService.registerDamkar(newUser);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => LoginScreen()),
+        );
+      } catch (e) {
+        print('Registration failed: $e');
+        // Tambahkan notifikasi atau dialog jika gagal
+      }
     } else {
       // Handle error jika password tidak cocok
+      print('Password tidak cocok');
     }
   }
 
-
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>(); // validasi form
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +82,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey, 
+          key: _formKey,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -99,7 +106,6 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                 ),
               ),
               SizedBox(height: 30),
-              // Input Nama
               TextFormField(
                 controller: _nameController,
                 decoration: InputDecoration(
@@ -120,7 +126,26 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                 },
               ),
               SizedBox(height: 10),
-              // Input Email
+              TextFormField(
+                controller: _telpController,
+                decoration: InputDecoration(
+                  labelText: 'Nomor Telepon',
+                  labelStyle: TextStyle(color: textColor),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: boxBorderColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: boxBorderColor, width: 2),
+                  ),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Nomor telepon wajib diisi';
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 10),
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -141,7 +166,6 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                 },
               ),
               SizedBox(height: 10),
-              // Dropdown Cabang Damkar
               DropdownButtonFormField<String>(
                 value: _selectedCabangDamkar,
                 decoration: InputDecoration(
@@ -176,7 +200,6 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                 },
               ),
               SizedBox(height: 10),
-              // Input Password
               TextFormField(
                 controller: _passwordController,
                 obscureText: true,
@@ -198,7 +221,6 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                 },
               ),
               SizedBox(height: 10),
-              // Input Konfirmasi Password
               TextFormField(
                 controller: _confirmPasswordController,
                 obscureText: true,
@@ -220,14 +242,10 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                 },
               ),
               SizedBox(height: 20),
-              // Tombol Register
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => LoginScreen()),
-                    );
+                    _register(); // Panggil fungsi register
                   }
                 },
                 style: ElevatedButton.styleFrom(

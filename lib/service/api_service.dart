@@ -2,58 +2,80 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Mock database for users
-  List<Map<String, dynamic>> _userData = [
-    {
-      'email': 'john@example.com',
-      'password': 'password123',
-      'name': 'John',
-      'role': 'damkar', // Bisa 'damkar', 'polisi_komandan', atau 'polisi_anggota'
-      'cabang': 'Damkar Keputih'
-    },
-    {
-      'email': 'polisi@example.com',
-      'password': '123',
-      'name': 'mida',
-      'role': 'polisi_komandan',
-      'cabang': 'Polsek Keputih',
-      'jabatan': 'komandan'
-    }
-  ];
+  final String baseUrl = 'https://2551-182-253-50-100.ngrok-free.app';
 
-  // Fungsi login mock
+  // Fungsi login dengan backend
   Future<Map<String, dynamic>> loginUser(String email, String password) async {
-    await Future.delayed(Duration(seconds: 1)); // Simulasi delay API
-    // Cek apakah user sudah terdaftar
-    final user = _userData.firstWhere(
-      (user) => user['email'] == email && user['password'] == password,
-      orElse: () => {}); // Mengembalikan map kosong jika tidak ada user
+    final url = Uri.parse('$baseUrl/loginUser');
 
-    if (user.isNotEmpty) {
-      return {
-        'status': 'success',
-        'token': 'mock_token_12345', // Token dummy
-        'user': user
-      };
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'password': password}),
+    );
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
     } else {
-      throw Exception('Invalid credentials');
+      throw Exception('Failed to login: ${response.reasonPhrase}');
     }
   }
 
-  // Fungsi untuk simpan user saat registrasi
-  Future<void> registerUser(Map<String, dynamic> newUser) async {
-    await Future.delayed(Duration(seconds: 1)); // Simulasi delay API
-    _userData.add(newUser);
+  // Fungsi registrasi Damkar
+  Future<void> registerDamkar(Map<String, dynamic> newUser) async {
+    final url = Uri.parse('$baseUrl/user/registerDamkar');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(newUser),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to register Damkar: ${response.reasonPhrase}');
+    }
   }
 
-  // Fungsi untuk mock data user (untuk keperluan register damkar/polisi)
+  // Fungsi registrasi Polisi
+  Future<void> registerPolisi(Map<String, dynamic> newUser) async {
+    final url = Uri.parse('$baseUrl/user/registerPolisi');
+
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(newUser),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to register Polisi: ${response.reasonPhrase}');
+    }
+  }
+
+  // Fungsi untuk mendapatkan cabang Damkar
   Future<List<String>> getCabangDamkar() async {
-    await Future.delayed(Duration(seconds: 1)); // Simulasi delay API
-    return ['Cabang A', 'Cabang B', 'Cabang C'];
+    final url = Uri.parse('$baseUrl/Damkar/PosDamkar');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return List<String>.from(data.map((item) => item['name'])); // Parsing jika cabang berupa objek
+    } else {
+      throw Exception('Failed to fetch cabang damkar: ${response.reasonPhrase}');
+    }
   }
 
+  // Fungsi untuk mendapatkan cabang Polsek
   Future<List<String>> getCabangPolsek() async {
-    await Future.delayed(Duration(seconds: 1)); // Simulasi delay API
-    return ['Polsek 1', 'Polsek 2', 'Polsek 3'];
+    final url = Uri.parse('$baseUrl/Polisi/PosPolisi');
+
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return List<String>.from(data.map((item) => item['name'])); // Parsing jika cabang berupa objek
+    } else {
+      throw Exception('Failed to fetch cabang polsek: ${response.reasonPhrase}');
+    }
   }
 }
