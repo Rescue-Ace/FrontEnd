@@ -1,105 +1,118 @@
 import 'package:flutter/material.dart';
+import '../service/api_service.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   final Map<String, dynamic> user;
 
-  HomePage({required this.user});
+  const HomePage({required this.user});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final ApiService _apiService = ApiService();
+  List<Map<String, dynamic>> _historyKebakaran = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchKebakaranHistory();
+  }
+
+  Future<void> _fetchKebakaranHistory() async {
+    try {
+      List<Map<String, dynamic>> history = await _apiService.getKebakaranHistory();
+      setState(() {
+        _historyKebakaran = history;
+        _isLoading = false;
+      });
+    } catch (e) {
+      print('Failed to fetch history: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    String role = user['role']; // role bisa 'damkar' atau 'polisi'
-    String name = user['name'];
-    String cabang = user['cabang'];
-    String? jabatan = user['jabatan']; // jabatan hanya ada jika role-nya polisi
+    String role = widget.user['role'];
+    String name = widget.user['nama'];
+    String cabang = (role == 'damkar') ? widget.user['id_pos_damkar'] : widget.user['id_pos_polsek'];
+    String jabatan = role == 'polisi' ? (widget.user['komandan'] ? 'Komandan' : 'Anggota') : '';
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFFA1BED6),
-        elevation: 0,
-        title: Text('Hi $name'),
+        backgroundColor: Color(0xFF4872B1),
+        title: Text("Home Page", style: TextStyle(color: Colors.white)),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Header
             Container(
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Color(0xFFA1BED6),
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(12),
               ),
-              padding: EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    role == 'damkar' ? 'Damkar $cabang' : 'Polsek $cabang',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                  if (role == 'polisi')
-                    Text(
-                      jabatan ?? '',
-                      style: TextStyle(fontSize: 18, color: Colors.white),
-                    ),
+                  Text("Hi $name", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
+                  Text(role == 'damkar' ? 'Damkar Cabang $cabang' : 'Polsek $cabang'),
+                  if (role == 'polisi') Text(jabatan, style: TextStyle(fontSize: 16, color: Colors.black54)),
                 ],
               ),
             ),
             SizedBox(height: 20),
-            // Peta atau informasi lokasi
+            // Map Section (Placeholder for now)
             Container(
               height: 200,
-              color: Colors.blueGrey[100],
-              child: Center(
-                child: Text('Peta lokasi kebakaran atau alat'),
-              ),
+              color: Colors.grey[300],
+              child: Center(child: Text("Map Placeholder")),
             ),
             SizedBox(height: 20),
-            // Historis kebakaran
-            Text(
-              'Histori Kebakaran',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            // History Section
+            Text("Histori Kebakaran", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             SizedBox(height: 10),
-            Column(
-              children: [
-                _buildHistoryItem('Lokasi, Tanggal Kebakaran 1'),
-                _buildHistoryItem('Lokasi, Tanggal Kebakaran 2'),
-                _buildHistoryItem('Lokasi, Tanggal Kebakaran 3'),
-              ],
+            Expanded(
+              child: _isLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : ListView.builder(
+                      itemCount: _historyKebakaran.length,
+                      itemBuilder: (context, index) {
+                        final kebakaran = _historyKebakaran[index];
+                        return ListTile(
+                          title: Text("Lokasi: ${kebakaran['location']}"),
+                          subtitle: Text("Tanggal: ${kebakaran['date']}"),
+                        );
+                      },
+                    ),
             ),
-            SizedBox(height: 20),
+            // Button for Navigation based on role
             ElevatedButton(
               onPressed: () {
+                // Navigate based on role
                 if (role == 'damkar') {
-                  // Navigasi ke halaman navigasi damkar
-                } else if (role == 'polisi' && jabatan == 'Komandan') {
-                  // Navigasi ke halaman navigasi komandan
-                } else if (role == 'polisi' && jabatan == 'Anggota') {
-                  // Navigasi ke halaman navigasi anggota
+                  Navigator.pushNamed(context, '/damkarNavigation');
+                } else if (role == 'polisi') {
+                  if (widget.user['komandan']) {
+                    Navigator.pushNamed(context, '/komandanNavigation');
+                  } else {
+                    Navigator.pushNamed(context, '/anggotaNavigation');
+                  }
                 }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF4872B1),
                 padding: EdgeInsets.symmetric(vertical: 15),
               ),
-              child: Text('Navigasi', style: TextStyle(fontSize: 18)),
+              child: Text("Navigasi", style: TextStyle(fontSize: 18, color: Colors.white)),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildHistoryItem(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5.0),
-      child: Container(
-        padding: EdgeInsets.all(10.0),
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.blueGrey[300]!),
-          borderRadius: BorderRadius.circular(8.0),
-        ),
-        child: Text(title),
       ),
     );
   }
