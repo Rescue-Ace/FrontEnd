@@ -25,7 +25,6 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
     _loadCabangDamkar();
   }
 
-  
   void _loadCabangDamkar() async {
     try {
       List<Map<String, dynamic>> cabang = await apiService.getCabangDamkar();
@@ -42,23 +41,47 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
     }
   }
 
- 
   void _register() async {
     if (_passwordController.text == _confirmPasswordController.text) {
       Map<String, dynamic> newUser = {
         'nama': _nameController.text,
         'telp': _telpController.text,
-        'id_pos_damkar': _selectedCabangDamkarId, 
+        'id_pos_damkar': _selectedCabangDamkarId,
         'email': _emailController.text,
         'password': _passwordController.text,
       };
 
+      print("Data dikirim: $newUser");
+
       try {
-        await apiService.registerDamkar(newUser);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
-        );
+        final response = await apiService.registerDamkar(newUser);
+        
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          // Jika berhasil, navigasi ke halaman login
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+          );
+        } else {
+          // Jika tidak berhasil, tampilkan dialog error
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: Text("Error"),
+                content: Text("Registration failed. Please try again."),
+                actions: [
+                  TextButton(
+                    child: Text("OK"),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
       } catch (e) {
         print('Registration failed: $e');
       }
@@ -66,6 +89,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
       print('Password tidak cocok');
     }
   }
+
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 

@@ -22,19 +22,20 @@ class ApiService {
   }
 
   // Fungsi registrasi Damkar
-  Future<void> registerDamkar(Map<String, dynamic> newUser) async {
+  Future<http.Response> registerDamkar(Map<String, dynamic> newUser) async {
     final url = Uri.parse('$baseUrl/user/registerDamkar');
-
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: json.encode(newUser),
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Failed to register Damkar: ${response.reasonPhrase}');
     }
+    return response;
   }
+
 
   // Fungsi registrasi Polisi
   Future<void> registerPolisi(Map<String, dynamic> newUser) async {
