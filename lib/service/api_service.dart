@@ -37,8 +37,8 @@ class ApiService {
   }
 
 
-  // Fungsi registrasi Polisi
-  Future<void> registerPolisi(Map<String, dynamic> newUser) async {
+  // Fungsi registrasi Polisi di ApiService
+  Future<http.Response> registerPolisi(Map<String, dynamic> newUser) async {
     final url = Uri.parse('$baseUrl/user/registerPolisi');
 
     final response = await http.post(
@@ -47,9 +47,11 @@ class ApiService {
       body: json.encode(newUser),
     );
 
-    if (response.statusCode != 200) {
+    if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Failed to register Polisi: ${response.reasonPhrase}');
     }
+
+    return response;
   }
 
   // Fungsi untuk mendapatkan cabang Damkar
