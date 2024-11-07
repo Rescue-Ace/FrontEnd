@@ -20,7 +20,6 @@ class _LoginScreenState extends State<LoginScreen> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
-    // Validasi input
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         _errorMessage = "Email and password cannot be empty";
@@ -34,22 +33,25 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      var response = await _apiService.loginUser(email, password);
+      final response = await _apiService.loginUser(email, password);
+      print("Full response data: $response");
 
-      // Ambil data user dari respons
-      final user = response['user'];
-      final role = user['role'];
-
-      // Navigasi ke HomePage dengan data user yang sudah login
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (context) => HomePage(user: user),
-        ),
-      );
+      if (response.containsKey('role') && response.containsKey('nama')) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => HomePage(user: response),
+          ),
+        );
+      } else {
+        setState(() {
+          _errorMessage = 'Login failed: Unexpected response structure';
+        });
+      }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Login failed: Invalid email or password';
+        _errorMessage = 'Login failed: ${e.toString()}';
+        print("Login Exception: $e");
       });
     } finally {
       setState(() {
@@ -72,7 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: 60),
               Center(
                 child: Image.asset(
-                  'assets/images/login.png', 
+                  'assets/images/login.png',
                   width: 200,
                   height: 200,
                 ),
@@ -84,12 +86,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF4872B1), 
+                    color: Color(0xFF4872B1),
                   ),
                 ),
               ),
               SizedBox(height: 20),
-              if (_errorMessage != null) // Menampilkan pesan error jika ada
+              if (_errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Text(
@@ -102,37 +104,37 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _emailController,
                 decoration: InputDecoration(
                   labelText: 'Email',
-                  labelStyle: TextStyle(color: Color(0xFF4872B1)), 
+                  labelStyle: TextStyle(color: Color(0xFF4872B1)),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFA1BED6)), 
+                    borderSide: BorderSide(color: Color(0xFFA1BED6)),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFA1BED6), width: 2.0), 
+                    borderSide: BorderSide(color: Color(0xFFA1BED6), width: 2.0),
                   ),
                 ),
               ),
               SizedBox(height: 10),
               TextField(
                 controller: _passwordController,
-                obscureText: true, 
+                obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
-                  labelStyle: TextStyle(color: Color(0xFF4872B1)), 
+                  labelStyle: TextStyle(color: Color(0xFF4872B1)),
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFA1BED6)), 
+                    borderSide: BorderSide(color: Color(0xFFA1BED6)),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFFA1BED6), width: 1.5), 
+                    borderSide: BorderSide(color: Color(0xFFA1BED6), width: 1.5),
                   ),
                 ),
               ),
               SizedBox(height: 20),
-              _isLoading 
-                  ? Center(child: CircularProgressIndicator()) // Menampilkan loading jika proses login berlangsung
+              _isLoading
+                  ? Center(child: CircularProgressIndicator())
                   : ElevatedButton(
-                      onPressed: _login, 
+                      onPressed: _login,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF4872B1), 
+                        backgroundColor: Color(0xFF4872B1),
                         padding: EdgeInsets.symmetric(vertical: 15),
                         textStyle: TextStyle(fontSize: 18),
                         foregroundColor: Colors.white,
@@ -144,11 +146,11 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: RichText(
                   text: TextSpan(
                     text: "Don't have an account? ",
-                    style: TextStyle(color: Color(0xFF4872B1)), 
+                    style: TextStyle(color: Color(0xFF4872B1)),
                     children: <TextSpan>[
                       TextSpan(
                         text: 'Sign Up',
-                        style: TextStyle(color: Color(0xFFA1BED6)), 
+                        style: TextStyle(color: Color(0xFFA1BED6)),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
                             Navigator.push(
