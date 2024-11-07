@@ -35,46 +35,46 @@ class ApiService {
 
 
   // Function to register Damkar user
-  Future<http.Response> registerDamkar(Map<String, dynamic> newUser) async {
-    final url = Uri.parse('$baseUrl/user/registerDamkar');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(newUser),
-      );
+    Future<http.Response> registerDamkar(Map<String, dynamic> newUser) async {
+      final url = Uri.parse('$baseUrl/user/registerDamkar'); // Endpoint untuk Damkar
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return response;
-      } else {
-        throw Exception('Failed to register Damkar: ${response.reasonPhrase}');
+      try {
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(newUser),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          return response;
+        } else {
+          throw Exception('Failed to register Damkar: ${response.reasonPhrase}');
+        }
+      } catch (e) {
+        throw Exception("Registration error for Damkar: $e");
       }
-    } catch (e) {
-      print("Registration error for Damkar: $e");
-      rethrow;
     }
-  }
 
   // Function to register Polisi user
-  Future<http.Response> registerPolisi(Map<String, dynamic> newUser) async {
-    final url = Uri.parse('$baseUrl/user/registerPolisi');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(newUser),
-      );
+    Future<http.Response> registerPolisi(Map<String, dynamic> newUser) async {
+      final url = Uri.parse('$baseUrl/user/registerPolisi'); // Endpoint untuk Polisi
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return response;
-      } else {
-        throw Exception('Failed to register Polisi: ${response.reasonPhrase}');
+      try {
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode(newUser),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          return response;
+        } else {
+          throw Exception('Failed to register Polisi: ${response.reasonPhrase}');
+        }
+      } catch (e) {
+        throw Exception("Registration error for Polisi: $e");
       }
-    } catch (e) {
-      print("Registration error for Polisi: $e");
-      rethrow;
     }
-  }
 
   // Function to get Damkar branches
   Future<List<Map<String, dynamic>>> getCabangDamkar() async {

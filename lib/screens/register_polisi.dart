@@ -43,54 +43,57 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
   }
 
   void _register() async {
-      if (_passwordController.text == _confirmPasswordController.text) {
-        Map<String, dynamic> newUser = {
-          'nama': _nameController.text,
-          'telp': _telpController.text,
-          'id_pos_damkar': _selectedCabangPolsekId,
-          'komandan': _selectedJabatan == 'Komandan',
-          'email': _emailController.text,
-          'password': _passwordController.text,
-        };
+    if (_passwordController.text == _confirmPasswordController.text) {
+      Map<String, dynamic> newUser = {
+        'nama': _nameController.text,
+        'telp': _telpController.text,
+        'id_polsek': _selectedCabangPolsekId, // Menggunakan kunci yang benar untuk Polsek
+        'komandan': _selectedJabatan == 'Komandan', // True jika "Komandan", false jika "Anggota"
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      };
 
-        print("Data dikirim: $newUser");
+      print("Data dikirim: $newUser");
 
-        try {
-          final response = await apiService.registerDamkar(newUser);
-          
-          if (response.statusCode == 200 || response.statusCode == 201) {
-            // Jika berhasil, navigasi ke halaman login
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => LoginScreen()),
-            );
-          } else {
-            // Jika tidak berhasil, tampilkan dialog error
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  title: Text("Error"),
-                  content: Text("Registration failed. Please try again."),
-                  actions: [
-                    TextButton(
-                      child: Text("OK"),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                );
-              },
-            );
-          }
-        } catch (e) {
-          print('Registration failed: $e');
+      try {
+        final response = await apiService.registerPolisi(newUser);
+        
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => LoginScreen()),
+          );
+        } else {
+          _showErrorDialog("Registration failed. Please try again.");
         }
-      } else {
-        print('Password tidak cocok');
+      } catch (e) {
+        print('Registration failed: $e');
+        _showErrorDialog("Registration failed. Please try again.");
       }
+    } else {
+      _showErrorDialog("Password dan konfirmasi password tidak cocok.");
     }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Error"),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
