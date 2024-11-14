@@ -223,7 +223,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                       items: _cabangPolsek.map((branch) {
                         return DropdownMenuItem<int>(
                           value: branch['id_polsek'],
-                          child: Text(branch['alamat'], style: TextStyle(color: textColor)),
+                          child: Text(branch['nama'], style: TextStyle(color: textColor)),
                         );
                       }).toList(),
                       onChanged: (newValue) {
