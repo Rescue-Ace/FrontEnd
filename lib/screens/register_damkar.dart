@@ -1,9 +1,14 @@
+// ignore_for_file: use_build_context_synchronously, avoid_print, duplicate_ignore
+
 import 'package:flutter/material.dart';
 import 'login_screen.dart'; 
 import '../service/api_service.dart'; 
 
 class RegisterDamkar extends StatefulWidget {
+  const RegisterDamkar({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _RegisterDamkarState createState() => _RegisterDamkarState();
 }
 
@@ -28,12 +33,14 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
   void _loadCabangDamkar() async {
     try {
       List<Map<String, dynamic>> cabang = await apiService.getCabangDamkar();
+      // ignore: avoid_print
       print("Cabang Damkar data: $cabang"); 
       setState(() {
         _cabangDamkar = cabang;
         _isLoading = false;
       });
     } catch (e) {
+      // ignore: avoid_print
       print("Error loading Damkar branches: $e");
       setState(() {
         _isLoading = false;
@@ -51,6 +58,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
         'password': _passwordController.text,
       };
 
+      // ignore: avoid_print
       print("Data dikirim: $newUser");
 
       try {
@@ -60,7 +68,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
           // Jika berhasil, navigasi ke halaman login
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => LoginScreen()),
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
           );
         } else {
           // Jika tidak berhasil, tampilkan dialog error
@@ -68,11 +76,11 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
             context: context,
             builder: (BuildContext context) {
               return AlertDialog(
-                title: Text("Error"),
-                content: Text("Registration failed. Please try again."),
+                title: const Text("Error"),
+                content: const Text("Registration failed. Please try again."),
                 actions: [
                   TextButton(
-                    child: Text("OK"),
+                    child: const Text("OK"),
                     onPressed: () {
                       Navigator.of(context).pop();
                     },
@@ -95,24 +103,24 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
 
   @override
   Widget build(BuildContext context) {
-    final Color backgroundColor = Color(0xFFF7F7F7);
-    final Color boxBorderColor = Color(0xFFA1BED6);
-    final Color textColor = Color(0xFF4872B1);
-    final Color buttonTextColor = Colors.white;
+    const Color backgroundColor = Color(0xFFF7F7F7);
+    const Color boxBorderColor = Color(0xFFA1BED6);
+    const Color textColor = Color(0xFF4872B1);
+    const Color buttonTextColor = Colors.white;
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: textColor),
+          icon: const Icon(Icons.arrow_back, color: textColor),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Form(
@@ -128,8 +136,8 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                         height: 80,
                       ),
                     ),
-                    SizedBox(height: 20),
-                    Center(
+                    const SizedBox(height: 20),
+                    const Center(
                       child: Text(
                         'Registrasi Damkar',
                         style: TextStyle(
@@ -139,10 +147,10 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     TextFormField(
                       controller: _nameController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Nama',
                         labelStyle: TextStyle(color: textColor),
                         border: OutlineInputBorder(
@@ -159,10 +167,10 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _telpController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Nomor Telepon',
                         labelStyle: TextStyle(color: textColor),
                         border: OutlineInputBorder(
@@ -179,10 +187,10 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _emailController,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Email',
                         labelStyle: TextStyle(color: textColor),
                         border: OutlineInputBorder(
@@ -199,18 +207,18 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     DropdownButtonFormField<int>(
                       value: _selectedCabangDamkarId,
                       decoration: InputDecoration(
                         labelText: 'Cabang Damkar',
-                        labelStyle: TextStyle(color: textColor),
+                        labelStyle: const TextStyle(color: textColor),
                         border: OutlineInputBorder(
-                          borderSide: BorderSide(color: boxBorderColor),
+                          borderSide: const BorderSide(color: boxBorderColor),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: boxBorderColor, width: 2),
+                          borderSide: const BorderSide(color: boxBorderColor, width: 2),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
@@ -218,7 +226,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                       items: _cabangDamkar.map((branch) {
                         return DropdownMenuItem<int>(
                           value: branch['id_pos_damkar'], 
-                          child: Text(branch['alamat'], style: TextStyle(color: textColor)), 
+                          child: Text(branch['alamat'], style: const TextStyle(color: textColor)), 
                         );
                       }).toList(),
                       onChanged: (newValue) {
@@ -233,11 +241,11 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Password',
                         labelStyle: TextStyle(color: textColor),
                         border: OutlineInputBorder(
@@ -254,11 +262,11 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _confirmPasswordController,
                       obscureText: true,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Confirm Password',
                         labelStyle: TextStyle(color: textColor),
                         border: OutlineInputBorder(
@@ -275,7 +283,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
@@ -283,10 +291,10 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF4872B1),
-                        padding: EdgeInsets.symmetric(vertical: 15),
+                        backgroundColor: const Color(0xFF4872B1),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
-                      child: Text('Register', style: TextStyle(fontSize: 18, color: buttonTextColor)),
+                      child: const Text('Register', style: TextStyle(fontSize: 18, color: buttonTextColor)),
                     ),
                   ],
                 ),

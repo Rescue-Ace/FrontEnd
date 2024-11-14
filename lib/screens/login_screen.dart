@@ -5,7 +5,10 @@ import 'home_page.dart';
 import 'mode_app.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _LoginScreenState createState() => _LoginScreenState();
 }
 
@@ -34,10 +37,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
     try {
       final response = await _apiService.loginUser(email, password);
-      print("Full response data: $response");
 
       if (response.containsKey('role') && response.containsKey('nama')) {
         Navigator.pushReplacement(
+          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(
             builder: (context) => HomePage(user: response),
@@ -51,6 +54,7 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       setState(() {
         _errorMessage = 'Login failed: ${e.toString()}';
+        // ignore: avoid_print
         print("Login Exception: $e");
       });
     } finally {
@@ -71,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: 60),
+              const SizedBox(height: 60),
               Center(
                 child: Image.asset(
                   'assets/images/login.png',
@@ -79,8 +83,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   height: 200,
                 ),
               ),
-              SizedBox(height: 10),
-              Center(
+              const SizedBox(height: 10),
+              const Center(
                 child: Text(
                   'Login',
                   style: TextStyle(
@@ -90,19 +94,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               if (_errorMessage != null)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Text(
                     _errorMessage!,
-                    style: TextStyle(color: Colors.red, fontSize: 14),
+                    style: const TextStyle(color: Colors.red, fontSize: 14),
                     textAlign: TextAlign.center,
                   ),
                 ),
               TextField(
                 controller: _emailController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email',
                   labelStyle: TextStyle(color: Color(0xFF4872B1)),
                   enabledBorder: OutlineInputBorder(
@@ -113,11 +117,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               TextField(
                 controller: _passwordController,
                 obscureText: true,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Password',
                   labelStyle: TextStyle(color: Color(0xFF4872B1)),
                   enabledBorder: OutlineInputBorder(
@@ -128,34 +132,34 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               _isLoading
-                  ? Center(child: CircularProgressIndicator())
+                  ? const Center(child: CircularProgressIndicator())
                   : ElevatedButton(
                       onPressed: _login,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF4872B1),
-                        padding: EdgeInsets.symmetric(vertical: 15),
-                        textStyle: TextStyle(fontSize: 18),
+                        backgroundColor: const Color(0xFF4872B1),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        textStyle: const TextStyle(fontSize: 18),
                         foregroundColor: Colors.white,
                       ),
-                      child: Text('Login'),
+                      child: const Text('Login'),
                     ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               Center(
                 child: RichText(
                   text: TextSpan(
                     text: "Don't have an account? ",
-                    style: TextStyle(color: Color(0xFF4872B1)),
+                    style: const TextStyle(color: Color(0xFF4872B1)),
                     children: <TextSpan>[
                       TextSpan(
                         text: 'Sign Up',
-                        style: TextStyle(color: Color(0xFFA1BED6)),
+                        style: const TextStyle(color: Color(0xFFA1BED6)),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => ModeApp()),
+                              MaterialPageRoute(builder: (context) => const ModeApp()),
                             );
                           },
                       ),

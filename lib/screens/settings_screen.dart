@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'editprofile.dart';
 
 class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Settings"),
+        title: const Text("Settings"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -14,17 +15,17 @@ class SettingsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ListTile(
-              leading: Icon(Icons.edit, color: Colors.blue),
-              title: Text("Edit Profile", style: TextStyle(fontSize: 18)),
+              leading: const Icon(Icons.edit, color: Colors.blue),
+              title: const Text("Edit Profile", style: TextStyle(fontSize: 18)),
               onTap: () {
                 // Navigasi ke UpdateProfileScreen
                 Navigator.pushNamed(context, '/edit_profile');
               },
             ),
-            Divider(),
+            const Divider(),
             ListTile(
-              leading: Icon(Icons.logout, color: Colors.red),
-              title: Text("Logout", style: TextStyle(fontSize: 18)),
+              leading: const Icon(Icons.logout, color: Colors.red),
+              title: const Text("Logout", style: TextStyle(fontSize: 18)),
               onTap: () {
                 // Navigasi ke LoginScreen dan menghapus semua halaman sebelumnya
                 Navigator.pushNamedAndRemoveUntil(

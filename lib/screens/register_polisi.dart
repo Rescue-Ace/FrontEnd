@@ -3,6 +3,8 @@ import 'login_screen.dart';
 import '../service/api_service.dart';
 
 class RegisterPolisi extends StatefulWidget {
+  const RegisterPolisi({super.key});
+
   @override
   _RegisterPolisiState createState() => _RegisterPolisiState();
 }
@@ -17,7 +19,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
 
   List<Map<String, dynamic>> _cabangPolsek = [];
   int? _selectedCabangPolsekId;
-  List<String> _jabatan = ['Komandan', 'Anggota'];
+  final List<String> _jabatan = ['Komandan', 'Anggota'];
   String? _selectedJabatan;
   bool _isLoading = true;
 
@@ -80,11 +82,11 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text("Error"),
+          title: const Text("Error"),
           content: Text(message),
           actions: [
             TextButton(
-              child: Text("OK"),
+              child: const Text("OK"),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -99,10 +101,10 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
 
   @override
   Widget build(BuildContext context) {
-    final Color backgroundColor = Color(0xFFF7F7F7);
-    final Color boxBorderColor = Color(0xFFA1BED6);
-    final Color textColor = Color(0xFF4872B1);
-    final Color buttonTextColor = Colors.white;
+    final Color backgroundColor = const Color(0xFFF7F7F7);
+    final Color boxBorderColor = const Color(0xFFA1BED6);
+    final Color textColor = const Color(0xFF4872B1);
+    const Color buttonTextColor = Colors.white;
 
     return Scaffold(
       appBar: AppBar(
@@ -116,7 +118,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
         ),
       ),
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Form(
@@ -131,7 +133,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         height: 80,
                       ),
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     Center(
                       child: Text(
                         'Registrasi Polisi',
@@ -142,7 +144,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 30),
+                    const SizedBox(height: 30),
                     TextFormField(
                       controller: _nameController,
                       decoration: InputDecoration(
@@ -162,7 +164,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _telpController,
                       decoration: InputDecoration(
@@ -182,7 +184,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(
@@ -202,7 +204,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     DropdownButtonFormField<int>(
                       value: _selectedCabangPolsekId,
                       decoration: InputDecoration(
@@ -236,7 +238,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     DropdownButtonFormField<String>(
                       value: _selectedJabatan,
                       decoration: InputDecoration(
@@ -270,7 +272,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _passwordController,
                       obscureText: true,
@@ -291,7 +293,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     TextFormField(
                       controller: _confirmPasswordController,
                       obscureText: true,
@@ -312,7 +314,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         return null;
                       },
                     ),
-                    SizedBox(height: 20),
+                    const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
                         if (_formKey.currentState!.validate()) {
@@ -320,8 +322,8 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF4872B1),
-                        padding: EdgeInsets.symmetric(vertical: 15),
+                        backgroundColor: const Color(0xFF4872B1),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
                       ),
                       child: Text('Register', style: TextStyle(fontSize: 18, color: buttonTextColor)),
                     ),
