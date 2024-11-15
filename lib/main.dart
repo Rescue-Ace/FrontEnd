@@ -5,7 +5,7 @@ import 'screens/home_page.dart';
 import 'screens/settings_screen.dart';
 import 'screens/editprofile.dart';
 
-void main() {
+Future<void> main() async {
   runApp(const MyApp());
 }
 

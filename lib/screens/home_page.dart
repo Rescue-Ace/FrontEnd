@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import '../service/api_service.dart';
 import 'settings_screen.dart';
 import 'damkar_navigation.dart';
@@ -11,7 +13,6 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key, required this.user});
 
   @override
-  // ignore: library_private_types_in_public_api
   _HomePageState createState() => _HomePageState();
 }
 
@@ -20,6 +21,13 @@ class _HomePageState extends State<HomePage> {
   List<Map<String, dynamic>> _historyKebakaran = [];
   bool _isLoading = true;
   String? _errorMessage;
+
+  // Dummy data untuk titik alat
+  final List<LatLng> alatLocations = [
+    LatLng(-7.282219, 112.794676), // ITS Surabaya
+    LatLng(-7.265757, 112.752089), // UNAIR Surabaya
+    LatLng(-7.270607, 112.768229), // Galaxy Mall Surabaya
+  ];
 
   @override
   void initState() {
@@ -47,9 +55,9 @@ class _HomePageState extends State<HomePage> {
     String name = widget.user['nama'] ?? 'Guest';
     String role = widget.user['role'] ?? 'Unknown';
     String cabang = role == 'Damkar'
-        ? 'Damkar Cabang ${widget.user['cabang_damkar'] ?? 'Unknown'}'
+        ? '${widget.user['cabang_damkar'] ?? 'Unknown'}'
         : role == 'Komandan' || role == 'Anggota'
-            ? 'Polsek ${widget.user['cabang_polsek'] ?? 'Unknown'}'
+            ? '${widget.user['cabang_polsek'] ?? 'Unknown'}'
             : 'Unknown Location';
 
     return Scaffold(
@@ -94,11 +102,36 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Placeholder for map or other content
+              // Peta Mapbox
               Container(
-                height: 200,
-                color: Colors.grey[300],
-                child: const Center(child: Text("Map Placeholder")),
+                height: 250,
+                child: FlutterMap(
+                  options: const MapOptions(
+                    initialCenter: LatLng(-7.270607, 112.768229), // Galaxy Mall sebagai lokasi default
+                    initialZoom: 13.0,
+                  ),
+                  children: [
+                    // Tile Layer untuk Mapbox
+                    TileLayer(
+                      urlTemplate:
+                          "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
+                      additionalOptions: const {
+                        'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g', // Ganti dengan token Mapbox Anda
+                      },
+                    ),
+                    // Marker Layer untuk lokasi alat
+                    MarkerLayer(
+                      markers: alatLocations.map((alatLocation) {
+                        return Marker(
+                          width: 50.0,
+                          height: 50.0,
+                          point: alatLocation,
+                          child: const Icon(Icons.location_on, color: Colors.red, size: 40),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 20),
               const Text("Histori Kebakaran", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF4872B1))),
