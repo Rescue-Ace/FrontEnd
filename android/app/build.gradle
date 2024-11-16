@@ -18,13 +18,13 @@ def flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "
 
 android {
     namespace = "com.protel.RescueAce"
-    compileSdk = 33
+    compileSdk = 34
     ndkVersion = "21.4.7075529"
 
     defaultConfig {
         applicationId = "com.protel.RescueAce"
         minSdk = 21
-        targetSdk = 33
+        targetSdk = 34
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
 

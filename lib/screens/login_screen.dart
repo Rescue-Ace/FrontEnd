@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../service/api_service.dart';
 import 'home_page.dart';
 import 'mode_app.dart';
@@ -8,7 +9,6 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
   _LoginScreenState createState() => _LoginScreenState();
 }
 
@@ -19,13 +19,32 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  // Mendapatkan FCM Token dan mengirimnya ke server
+  Future<void> _getFCMTokenAndSendToServer(int userId, String role) async {
+    try {
+      String? token = await FirebaseMessaging.instance.getToken();
+      if (token != null) {
+        print("FCM Token: $token");
+        if (role == "Damkar") {
+          await _apiService.putTokenDamkar(userId, token);
+        }
+        print("FCM token berhasil dikirim ke server.");
+      } else {
+        print("Gagal mendapatkan FCM token.");
+      }
+    } catch (e) {
+      print("Error saat mengirim FCM token: $e");
+    }
+  }
+
+  // Logika untuk login
   void _login() async {
-    String email = _emailController.text;
-    String password = _passwordController.text;
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
       setState(() {
-        _errorMessage = "Email and password cannot be empty";
+        _errorMessage = "Email dan password tidak boleh kosong.";
       });
       return;
     }
@@ -36,11 +55,19 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
+      // Kirim permintaan login ke server
       final response = await _apiService.loginUser(email, password);
 
       if (response.containsKey('role') && response.containsKey('nama')) {
+        // Ambil data pengguna
+        int userId = response['id_damkar'] ?? 0;
+        String role = response['role'];
+
+        // Dapatkan FCM token dan kirim ke server
+        await _getFCMTokenAndSendToServer(userId, role);
+
+        // Navigasi ke halaman utama
         Navigator.pushReplacement(
-          // ignore: use_build_context_synchronously
           context,
           MaterialPageRoute(
             builder: (context) => HomePage(user: response),
@@ -48,14 +75,12 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         setState(() {
-          _errorMessage = 'Login failed: Unexpected response structure';
+          _errorMessage = 'Login gagal: Struktur respons tidak valid.';
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Login failed: ${e.toString()}';
-        // ignore: avoid_print
-        print("Login Exception: $e");
+        _errorMessage = 'Login gagal: ${e.toString()}';
       });
     } finally {
       setState(() {
