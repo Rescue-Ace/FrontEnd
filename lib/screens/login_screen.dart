@@ -66,7 +66,6 @@ class _LoginScreenState extends State<LoginScreen> {
         // Dapatkan FCM token dan kirim ke server
         await _getFCMTokenAndSendToServer(userId, role);
 
-        // Navigasi ke halaman utama
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(

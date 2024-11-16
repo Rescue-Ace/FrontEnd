@@ -25,7 +25,7 @@ class ApiService {
             data.containsKey('role') &&
             data.containsKey('nama')) {
           return {
-            'id_damkar': data['id_damkar'] ?? 0, // Gunakan default value jika `null`
+            'id_damkar': data['id_damkar'] ?? 0, 
             'role': data['role'] ?? '',
             'nama': data['nama'] ?? '',
             'token': data['token'] ?? '',
