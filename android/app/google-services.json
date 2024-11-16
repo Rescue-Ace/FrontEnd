@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "700939262875",
+    "firebase_url": "https://rescue-ace-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "rescue-ace",
+    "storage_bucket": "rescue-ace.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700939262875:android:97eaaed55528e410771f3e",
+        "android_client_info": {
+          "package_name": "com.protel.RescueAce"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDN3I2d_lKg7nvm0QnuTk8wYjPKdKdhLa0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
