@@ -21,15 +21,19 @@ class ApiService {
         final data = json.decode(response.body);
 
         // Validasi bahwa semua properti yang dibutuhkan tersedia
-        if (data.containsKey('id_damkar') &&
+        if ((data.containsKey('id_damkar') || data.containsKey('id_polisi')) &&
             data.containsKey('role') &&
             data.containsKey('nama')) {
           return {
-            'id_damkar': data['id_damkar'] ?? 0, 
+            'id_damkar': data['id_damkar'] ?? 0,
+            'id_polisi': data['id_polisi'] ?? 0,
             'role': data['role'] ?? '',
             'nama': data['nama'] ?? '',
             'token': data['token'] ?? '',
-            'cabang_damkar': data['cabang_damkar'] ?? 'Unknown',
+            // Hanya cabang yang sesuai dengan role akan diambil
+            'cabang_damkar': data['cabang_damkar'] ?? 'Damkar tidak ditemukan',
+            'cabang_polsek': data['cabang_polsek'] ?? 'Polsek tidak ditemukan',
+            'id_polsek': data['id_polsek'] ?? 0, // Tambahkan ID Polsek jika ada
           };
         } else {
           throw Exception('Struktur respons tidak sesuai.');

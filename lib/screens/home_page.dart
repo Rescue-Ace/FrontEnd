@@ -84,7 +84,7 @@ class _HomePageState extends State<HomePage> {
 
   void _navigateToRoleSpecificPage() {
     String role = widget.user['role'] ?? 'Unknown';
-    int? idCabangPolsek = widget.user['id_cabang_polsek'];
+    int? idCabangPolsek = widget.user['id_polsek'];
 
     if (_currentNotificationData == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -127,15 +127,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  ///////
+
   @override
   Widget build(BuildContext context) {
     String name = widget.user['nama'] ?? 'Guest';
     String role = widget.user['role'] ?? 'Unknown';
-    String cabang = role == 'Damkar'
-        ? '${widget.user['cabang_damkar'] ?? 'Unknown'}'
-        : role == 'Komandan' || role == 'Anggota'
-            ? '${widget.user['cabang_polsek'] ?? 'Unknown'}'
-            : 'Unknown Location';
+    String cabang = widget.user['cabang'] ?? 'Lokasi tidak ditemukan';
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -168,17 +166,36 @@ class _HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("Hi $name", style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                    const SizedBox(height: 8),
-                    Text(cabang, style: const TextStyle(fontSize: 16, color: Color(0xFF4872B1))),
+                    Text(
+                      "Hi $name",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      cabang,
+                      style: const TextStyle(
+                        fontSize: 15,
+                        color: Color(0xFF4872B1),
+                      ),
+                    ),
                     if (role == 'Komandan' || role == 'Anggota')
-                      Text(role, style: const TextStyle(fontSize: 16, color: Color(0xFF4872B1))),
+                      Text(
+                        role,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF4872B1),
+                        ),
+                      ),
                   ],
                 ),
               ),
               const SizedBox(height: 20),
               Container(
-                height: 300,
+                height: 280,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey),
@@ -194,7 +211,9 @@ class _HomePageState extends State<HomePage> {
                           TileLayer(
                             urlTemplate:
                                 "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
-                            additionalOptions: const {'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g'},
+                            additionalOptions: const {
+                              'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g',
+                            },
                           ),
                           MarkerLayer(
                             markers: _alatLocations.map((alat) {
@@ -213,24 +232,39 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
               ),
-              const SizedBox(height: 20),
-              const Text("Histori Kebakaran", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF4872B1))),
+              const SizedBox(height: 10),
+              const Text(
+                "Histori Kebakaran",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF4872B1),
+                ),
+              ),
               const SizedBox(height: 10),
               Container(
-                height: 200,
+                height: 180,
                 decoration: BoxDecoration(
                   color: const Color(0xFFA1BED6),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: _historyKebakaran.isEmpty
-                    ? const Center(child: Text("Tidak ada histori kebakaran."))
+                    ? const Center(
+                        child: Text("Tidak ada histori kebakaran."),
+                      )
                     : ListView.builder(
                         itemCount: _historyKebakaran.length,
                         itemBuilder: (context, index) {
                           final kebakaran = _historyKebakaran[index];
                           return ListTile(
-                            title: Text("Lokasi: ${kebakaran['location']}", style: const TextStyle(color: Color(0xFF4872B1))),
-                            subtitle: Text("Tanggal: ${kebakaran['date']}", style: const TextStyle(color: Color(0xFF4872B1))),
+                            title: Text(
+                              "Lokasi: ${kebakaran['location']}",
+                              style: const TextStyle(color: Color(0xFF4872B1)),
+                            ),
+                            subtitle: Text(
+                              "Tanggal: ${kebakaran['date']}",
+                              style: const TextStyle(color: Color(0xFF4872B1)),
+                            ),
                           );
                         },
                       ),
@@ -239,16 +273,14 @@ class _HomePageState extends State<HomePage> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _currentNotificationData != null ? _navigateToRoleSpecificPage : null,
+                  onPressed: _navigateToRoleSpecificPage,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: _currentNotificationData != null
-                        ? const Color(0xFF4872B1)
-                        : Colors.grey,
+                    backgroundColor: const Color(0xFF4872B1),
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  child: Text(
-                    _currentNotificationData != null ? "Navigasi" : "Tidak Ada Kebakaran",
-                    style: const TextStyle(fontSize: 18, color: Colors.white),
+                  child: const Text(
+                    "Navigasi",
+                    style: TextStyle(fontSize: 18, color: Colors.white),
                   ),
                 ),
               ),
@@ -258,4 +290,5 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+  
 }

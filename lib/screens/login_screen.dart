@@ -4,6 +4,8 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import '../service/api_service.dart';
 import 'home_page.dart';
 import 'mode_app.dart';
+import 'dart:convert'; 
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,18 +22,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   // Mendapatkan FCM Token dan mengirimnya ke server
-  Future<void> _getFCMTokenAndSendToServer(int userId, String role, int? idPolsek) async {
+  Future<void> _getFCMTokenAndSendToServer(int userId, String role) async {
     try {
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
         print("FCM Token: $token");
-
         if (role == "Damkar") {
           await _apiService.putTokenDamkar(userId, token);
-        } else if (role == "Polisi") {
-          await _apiService.putTokenPolisi(userId, token);
         }
-
         print("FCM token berhasil dikirim ke server.");
       } else {
         print("Gagal mendapatkan FCM token.");
@@ -41,70 +39,77 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Validasi email
-  bool _isValidEmail(String email) {
-    final regex = RegExp(r"^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$");
-    return regex.hasMatch(email);
-  }
-
   // Logika untuk login
   void _login() async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
+  String email = _emailController.text.trim();
+  String password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
-      setState(() {
-        _errorMessage = "Email dan password tidak boleh kosong.";
-      });
-      return;
-    }
-
-    if (!_isValidEmail(email)) {
-      setState(() {
-        _errorMessage = "Format email tidak valid.";
-      });
-      return;
-    }
-
+  if (email.isEmpty || password.isEmpty) {
     setState(() {
-      _isLoading = true;
-      _errorMessage = null;
+      _errorMessage = "Email dan password tidak boleh kosong.";
     });
+    return;
+  }
 
-    try {
-      // Kirim permintaan login ke server
-      final response = await _apiService.loginUser(email, password);
+  setState(() {
+    _isLoading = true;
+    _errorMessage = null;
+  });
 
-      if (response.containsKey('role') && response.containsKey('nama')) {
-        // Ambil data pengguna
-        int userId = response['id_damkar'] ?? response['id_polisi'] ?? 0;
-        String role = response['role'];
-        int? idPolsek = response['id_polsek'];
+  try {
+    // Kirim permintaan login ke server
+    final response = await _apiService.loginUser(email, password);
 
-        // Dapatkan FCM token dan kirim ke server
-        await _getFCMTokenAndSendToServer(userId, role, idPolsek);
+    if (response.containsKey('role') && response.containsKey('nama')) {
+      // Ambil data pengguna
+      int userId = response['id_damkar'] ?? response['id_polisi'] ?? 0;
+      String role = response['role'];
+      String cabang = role == "Damkar"
+          ? response['cabang_damkar'] ?? 'Damkar tidak ditemukan'
+          : response['cabang_polsek'] ?? 'Polsek tidak ditemukan';
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => HomePage(user: response),
-          ),
-        );
-      } else {
-        setState(() {
-          _errorMessage = 'Login gagal: Struktur respons tidak valid.';
-        });
-      }
-    } catch (e) {
+      // Tambahkan ID Polsek untuk navigasi khusus
+      int idPolsek = response['id_polsek'] ?? 0;
+
+      // Buat map data pengguna untuk dikirim ke HomePage
+      Map<String, dynamic> userData = {
+        'id_damkar': response['id_damkar'] ?? 0,
+        'id_polisi': response['id_polisi'] ?? 0,
+        'role': role,
+        'nama': response['nama'],
+        'cabang': cabang,
+        'id_polsek': idPolsek,
+      };
+
+      // Dapatkan FCM token dan kirim ke server
+      await _getFCMTokenAndSendToServer(userId, role);
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setBool('isLoggedIn', true);
+      prefs.setString('userData', jsonEncode(response));
+
+      // Navigasi ke halaman utama
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HomePage(user: userData),
+        ),
+      );
+    } else {
       setState(() {
-        _errorMessage = 'Login gagal: ${e.toString()}';
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
+        _errorMessage = 'Login gagal: Struktur respons tidak valid.';
       });
     }
+  } catch (e) {
+    setState(() {
+      _errorMessage = 'Login gagal: ${e.toString()}';
+    });
+  } finally {
+    setState(() {
+      _isLoading = false;
+    });
   }
+}
 
   @override
   Widget build(BuildContext context) {
