@@ -6,6 +6,14 @@ import 'screens/login_screen.dart';
 import 'screens/home_page.dart';
 import 'screens/settings_screen.dart';
 import 'screens/editprofile.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+
+// Penanganan pesan Firebase saat aplikasi berjalan di latar belakang
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Log pesan untuk debugging
+  debugPrint("Background Message: ${message.notification?.title}");
+  debugPrint("Background Message Data: ${message.data}");
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +26,9 @@ void main() async {
   } catch (e) {
     debugPrint("Error initializing Firebase: $e");
   }
+
+  // Daftarkan handler untuk notifikasi latar belakang
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(const MyApp());
 }

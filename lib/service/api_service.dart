@@ -190,4 +190,87 @@ class ApiService {
       throw Exception('Error fetching Kebakaran history: $e');
     }
   }
+
+  Future<List<Map<String, dynamic>>> getAllPolisi() async {
+  final url = Uri.parse('$baseUrl/user/getAllPolisi');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(json.decode(response.body));
+      } else {
+        throw Exception('Failed to fetch polisi data');
+      }
+    } catch (e) {
+      throw Exception("Error fetching polisi data: $e");
+    }
+  }
+
+    Future<List<Map<String, dynamic>>> getAllAlat() async {
+    final url = Uri.parse('$baseUrl/Alat');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(json.decode(response.body));
+      } else {
+        throw Exception('Gagal mengambil data alat: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      throw Exception("Error: $e");
+    }
+  }
+
+    // Mengutus anggota ke titik tertentu
+  Future<void> utusAnggota(int idPolisi, double latitude, double longitude) async {
+    final url = Uri.parse('$baseUrl/Polisi/utusPolisi');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'id_polisi': idPolisi,
+          'latitude': latitude,
+          'longitude': longitude,
+        }),
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Gagal mengutus anggota: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      throw Exception('Kesalahan mengutus anggota: $e');
+    }
+  }
+
+  // Mendapatkan anggota berdasarkan cabang polsek
+  Future<List<Map<String, dynamic>>> getAnggotaByCabangPolsek(int idPolsek) async {
+    final url = Uri.parse('$baseUrl/user/Anggota/$idPolsek');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        return List<Map<String, dynamic>>.from(json.decode(response.body));
+      } else {
+        throw Exception('Gagal mengambil data anggota: ${response.reasonPhrase}');
+      }
+    } catch (e) {
+      throw Exception('Kesalahan mengambil data anggota: $e');
+    }
+  }
+
+  Future<void> updateStatusKebakaran(int idKebakaran, String status) async {
+    final url = Uri.parse('$baseUrl/Kebakaran/$idKebakaran');
+    try {
+      final response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'status_kebakaran': status}),
+      );
+      if (response.statusCode != 200) {
+        throw Exception('Gagal memperbarui status kebakaran');
+      }
+    } catch (e) {
+      throw Exception('Kesalahan memperbarui status kebakaran: $e');
+    }
+  }
+
+
 }
