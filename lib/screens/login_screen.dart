@@ -20,14 +20,18 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   // Mendapatkan FCM Token dan mengirimnya ke server
-  Future<void> _getFCMTokenAndSendToServer(int userId, String role) async {
+  Future<void> _getFCMTokenAndSendToServer(int userId, String role, int? idPolsek) async {
     try {
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
         print("FCM Token: $token");
+
         if (role == "Damkar") {
           await _apiService.putTokenDamkar(userId, token);
+        } else if (role == "Polisi") {
+          await _apiService.putTokenPolisi(userId, token);
         }
+
         print("FCM token berhasil dikirim ke server.");
       } else {
         print("Gagal mendapatkan FCM token.");
@@ -35,6 +39,12 @@ class _LoginScreenState extends State<LoginScreen> {
     } catch (e) {
       print("Error saat mengirim FCM token: $e");
     }
+  }
+
+  // Validasi email
+  bool _isValidEmail(String email) {
+    final regex = RegExp(r"^[a-zA-Z0-9._%-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$");
+    return regex.hasMatch(email);
   }
 
   // Logika untuk login
@@ -45,6 +55,13 @@ class _LoginScreenState extends State<LoginScreen> {
     if (email.isEmpty || password.isEmpty) {
       setState(() {
         _errorMessage = "Email dan password tidak boleh kosong.";
+      });
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      setState(() {
+        _errorMessage = "Format email tidak valid.";
       });
       return;
     }
@@ -60,11 +77,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.containsKey('role') && response.containsKey('nama')) {
         // Ambil data pengguna
-        int userId = response['id_damkar'] ?? 0;
+        int userId = response['id_damkar'] ?? response['id_polisi'] ?? 0;
         String role = response['role'];
+        int? idPolsek = response['id_polsek'];
 
         // Dapatkan FCM token dan kirim ke server
-        await _getFCMTokenAndSendToServer(userId, role);
+        await _getFCMTokenAndSendToServer(userId, role, idPolsek);
 
         Navigator.pushReplacement(
           context,
