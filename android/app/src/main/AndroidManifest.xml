@@ -2,7 +2,7 @@
     package="com.protel.RescueAce">
 
     <application
-        android:label="flutter_application_1"
+        android:label="RescueAce"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
