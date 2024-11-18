@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../service/api_service.dart';
 import 'settings_screen.dart';
 import 'damkar_navigation.dart';
@@ -18,21 +19,33 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final ApiService _apiService = ApiService();
+  List<Map<String, dynamic>> _alatLocations = [];
   List<Map<String, dynamic>> _historyKebakaran = [];
   bool _isLoading = true;
   String? _errorMessage;
-
-  // Dummy data untuk titik alat
-  final List<LatLng> alatLocations = [
-    LatLng(-7.282219, 112.794676), // ITS Surabaya
-    LatLng(-7.265757, 112.752089), // UNAIR Surabaya
-    LatLng(-7.270607, 112.768229), // Galaxy Mall Surabaya
-  ];
+  Map<String, dynamic>? _currentNotificationData;
 
   @override
   void initState() {
     super.initState();
+    _fetchAlatLocations();
     _fetchKebakaranHistory();
+    _setupFirebaseMessaging();
+  }
+
+  Future<void> _fetchAlatLocations() async {
+    try {
+      final alatData = await _apiService.getAllAlat();
+      setState(() {
+        _alatLocations = alatData;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Gagal memuat data alat: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _fetchKebakaranHistory() async {
@@ -40,13 +53,77 @@ class _HomePageState extends State<HomePage> {
       List<Map<String, dynamic>> history = await _apiService.getKebakaranHistory();
       setState(() {
         _historyKebakaran = history;
-        _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to load history: $e';
-        _isLoading = false;
+        _errorMessage = 'Gagal memuat histori kebakaran: $e';
       });
+    }
+  }
+
+  void _setupFirebaseMessaging() {
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.notification != null) {
+        setState(() {
+          _currentNotificationData = message.data;
+        });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Notifikasi: ${message.notification!.title}")),
+        );
+      }
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      setState(() {
+        _currentNotificationData = message.data;
+      });
+      _navigateToRoleSpecificPage();
+    });
+  }
+
+  void _navigateToRoleSpecificPage() {
+    String role = widget.user['role'] ?? 'Unknown';
+    int? idCabangPolsek = widget.user['id_cabang_polsek'];
+
+    if (_currentNotificationData == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Tidak ada data kebakaran saat ini.")),
+      );
+      return;
+    }
+
+    if (role == 'Damkar') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => DamkarNavigationScreen(
+            routeData: _currentNotificationData?['coordinates'],
+            idKebakaran: _currentNotificationData?['id_kebakaran'] ?? 0,
+          ),
+        ),
+      );
+    } else if (role == 'Komandan' && idCabangPolsek != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => KomandanNavigationScreen(
+            neutralizationPoints: _currentNotificationData?['data'],
+            routeData: _currentNotificationData?['coordinates'],
+            idCabangPolsek: idCabangPolsek,
+          ),
+        ),
+      );
+    } else if (role == 'Anggota') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AnggotaNavigationScreen(
+            assignedPoint: _currentNotificationData?['data']?[0],
+            routeData: _currentNotificationData?['coordinates'],
+          ),
+        ),
+      );
     }
   }
 
@@ -67,7 +144,6 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Row with Settings Icon
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -82,7 +158,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              // User information section
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(16),
@@ -102,96 +177,79 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 20),
-              // Peta Mapbox
               Container(
-                height: 250,
-                child: FlutterMap(
-                  options: const MapOptions(
-                    initialCenter: LatLng(-7.270607, 112.768229), // Galaxy Mall sebagai lokasi default
-                    initialZoom: 13.0,
-                  ),
-                  children: [
-                    // Tile Layer untuk Mapbox
-                    TileLayer(
-                      urlTemplate:
-                          "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
-                      additionalOptions: const {
-                        'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g', // Ganti dengan token Mapbox Anda
-                      },
-                    ),
-                    // Marker Layer untuk lokasi alat
-                    MarkerLayer(
-                      markers: alatLocations.map((alatLocation) {
-                        return Marker(
-                          width: 50.0,
-                          height: 50.0,
-                          point: alatLocation,
-                          child: const Icon(Icons.location_on, color: Colors.red, size: 40),
-                        );
-                      }).toList(),
-                    ),
-                  ],
+                height: 300,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey),
                 ),
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : FlutterMap(
+                        options: const MapOptions(
+                          initialCenter: LatLng(-7.282219, 112.794676),
+                          initialZoom: 13.0,
+                        ),
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
+                            additionalOptions: const {'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g'},
+                          ),
+                          MarkerLayer(
+                            markers: _alatLocations.map((alat) {
+                              return Marker(
+                                point: LatLng(alat['latitude'], alat['longitude']),
+                                width: 50,
+                                height: 50,
+                                child: const Icon(
+                                  Icons.location_on,
+                                  color: Colors.red,
+                                  size: 40,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
               ),
               const SizedBox(height: 20),
               const Text("Histori Kebakaran", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF4872B1))),
               const SizedBox(height: 10),
-              // Box with scrollable list for history
               Container(
-                height: 200, // Tentukan tinggi container untuk scroll list di dalamnya
+                height: 200,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFA1BED6), // Warna biru muda
+                  color: const Color(0xFFA1BED6),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _errorMessage != null
-                        ? Center(child: Text(_errorMessage!, style: const TextStyle(color: Colors.red)))
-                        : ListView.builder(
-                            itemCount: _historyKebakaran.length,
-                            itemBuilder: (context, index) {
-                              final kebakaran = _historyKebakaran[index];
-                              return ListTile(
-                                title: Text(
-                                  "Lokasi: ${kebakaran['location']}",
-                                  style: const TextStyle(color: Color(0xFF4872B1)),
-                                ),
-                                subtitle: Text(
-                                  "Tanggal: ${kebakaran['date']}",
-                                  style: const TextStyle(color: Color(0xFF4872B1)),
-                                ),
-                              );
-                            },
-                          ),
+                child: _historyKebakaran.isEmpty
+                    ? const Center(child: Text("Tidak ada histori kebakaran."))
+                    : ListView.builder(
+                        itemCount: _historyKebakaran.length,
+                        itemBuilder: (context, index) {
+                          final kebakaran = _historyKebakaran[index];
+                          return ListTile(
+                            title: Text("Lokasi: ${kebakaran['location']}", style: const TextStyle(color: Color(0xFF4872B1))),
+                            subtitle: Text("Tanggal: ${kebakaran['date']}", style: const TextStyle(color: Color(0xFF4872B1))),
+                          );
+                        },
+                      ),
               ),
               const SizedBox(height: 20),
-              // Navigation button based on role
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (role == 'Damkar') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const DamkarNavigationScreen()),
-                      );
-                    } else if (role == 'Komandan') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const KomandanNavigationScreen()),
-                      );
-                    } else if (role == 'Anggota') {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AnggotaNavigationScreen()),
-                      );
-                    }
-                  },
+                  onPressed: _currentNotificationData != null ? _navigateToRoleSpecificPage : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4872B1),
+                    backgroundColor: _currentNotificationData != null
+                        ? const Color(0xFF4872B1)
+                        : Colors.grey,
                     padding: const EdgeInsets.symmetric(vertical: 15),
                   ),
-                  child: const Text("Navigasi", style: TextStyle(fontSize: 18, color: Colors.white)),
+                  child: Text(
+                    _currentNotificationData != null ? "Navigasi" : "Tidak Ada Kebakaran",
+                    style: const TextStyle(fontSize: 18, color: Colors.white),
+                  ),
                 ),
               ),
             ],
