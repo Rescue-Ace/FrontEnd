@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -63,11 +64,22 @@ class _HomePageState extends State<HomePage> {
 
   void _setupFirebaseMessaging() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (message.notification != null) {
-        setState(() {
-          _currentNotificationData = message.data;
-        });
+      if (message.data.isNotEmpty) {
+        try {
+          final parsedData = _parseFCMData(message.data);
+          if (parsedData.containsKey('status') && parsedData['status'] == 'padam') {
+            _handleKebakaranPadam();
+          } else {
+            setState(() {
+              _currentNotificationData = parsedData;
+            });
+          }
+        } catch (e) {
+          print("Error parsing FCM data: $e");
+        }
+      }
 
+      if (message.notification != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Notifikasi: ${message.notification!.title}")),
         );
@@ -75,23 +87,52 @@ class _HomePageState extends State<HomePage> {
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      setState(() {
-        _currentNotificationData = message.data;
-      });
-      _navigateToRoleSpecificPage();
+      if (message.data.isNotEmpty) {
+        try {
+          final parsedData = _parseFCMData(message.data);
+          setState(() {
+            _currentNotificationData = parsedData;
+          });
+          _navigateToRoleSpecificPage();
+        } catch (e) {
+          print("Error parsing FCM data on app open: $e");
+        }
+      }
     });
   }
 
-  void _navigateToRoleSpecificPage() {
-    String role = widget.user['role'] ?? 'Unknown';
-    int? idCabangPolsek = widget.user['id_polsek'];
+  Map<String, dynamic> _parseFCMData(Map<String, dynamic> data) {
+    final parsedData = <String, dynamic>{};
+    data.forEach((key, value) {
+      if (value is String && (value.startsWith('{') || value.startsWith('['))) {
+        parsedData[key] = jsonDecode(value);
+      } else {
+        parsedData[key] = value;
+      }
+    });
+    return parsedData;
+  }
 
+  void _handleKebakaranPadam() {
+    Navigator.popUntil(context, (route) => route.isFirst);
+    setState(() {
+      _currentNotificationData = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Kebakaran telah padam.')),
+    );
+  }
+
+  void _navigateToRoleSpecificPage() {
     if (_currentNotificationData == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Tidak ada data kebakaran saat ini.")),
       );
       return;
     }
+
+    final role = widget.user['role'] ?? 'Unknown';
+    final idCabangPolsek = widget.user['id_polsek'];
 
     if (role == 'Damkar') {
       Navigator.push(
@@ -158,7 +199,7 @@ class _HomePageState extends State<HomePage> {
               ),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: const Color(0xFFA1BED6),
                   borderRadius: BorderRadius.circular(12),
@@ -193,11 +234,11 @@ class _HomePageState extends State<HomePage> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               Container(
                 height: 280,
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(2),
                   border: Border.all(color: Colors.grey),
                 ),
                 child: _isLoading
@@ -232,7 +273,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                       ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               const Text(
                 "Histori Kebakaran",
                 style: TextStyle(
@@ -241,7 +282,7 @@ class _HomePageState extends State<HomePage> {
                   color: Color(0xFF4872B1),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Container(
                 height: 180,
                 decoration: BoxDecoration(
@@ -256,20 +297,21 @@ class _HomePageState extends State<HomePage> {
                         itemCount: _historyKebakaran.length,
                         itemBuilder: (context, index) {
                           final kebakaran = _historyKebakaran[index];
+                          final alat = kebakaran['Alat'];
                           return ListTile(
                             title: Text(
-                              "Lokasi: ${kebakaran['location']}",
+                              "Lokasi: ${alat['alamat']}",
                               style: const TextStyle(color: Color(0xFF4872B1)),
                             ),
                             subtitle: Text(
-                              "Tanggal: ${kebakaran['date']}",
+                              "Tanggal: ${kebakaran['waktu_pelaporan']}",
                               style: const TextStyle(color: Color(0xFF4872B1)),
                             ),
                           );
                         },
                       ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 15),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
