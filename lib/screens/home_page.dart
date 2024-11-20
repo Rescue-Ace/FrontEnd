@@ -100,19 +100,24 @@ class _HomePageState extends State<HomePage> {
 
   Map<String, dynamic> _parseFCMData(Map<String, dynamic> data) {
     final parsedData = <String, dynamic>{};
+
     data.forEach((key, value) {
-      // Jika value adalah string JSON, decode
-      if (value is String && (value.startsWith('{') || value.startsWith('['))) {
+      // Jika key "data" adalah JSON string, decode isinya
+      if (key == 'data' && value is String) {
         try {
-          parsedData[key] = jsonDecode(value);
+          parsedData.addAll(jsonDecode(value)); // Decode JSON dalam key "data"
         } catch (e) {
           throw Exception("Payload FCM tidak valid: $data");
         }
+      } else if (value is String && (value.startsWith('{') || value.startsWith('['))) {
+        // Decode JSON string jika diperlukan
+        parsedData[key] = jsonDecode(value);
       } else {
-        // Jika value sudah berbentuk Map, langsung gunakan
+        // Gunakan value langsung jika sudah valid
         parsedData[key] = value;
       }
     });
+
     return parsedData;
   }
 
