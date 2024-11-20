@@ -29,14 +29,13 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-     print("Data user yang diterima di HomePage: ${widget.user}");
+    print("Data user yang diterima di HomePage: ${widget.user}");
 
     _fetchAlatLocations();
     _fetchKebakaranHistory();
     _setupFirebaseMessaging();
   }
 
- 
   Future<void> _fetchAlatLocations() async {
     try {
       final alatData = await _apiService.getAllAlat();
@@ -65,20 +64,19 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  ///////
   void _setupFirebaseMessaging() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Raw FCM Data: ${message.data}");
+
       if (message.data.isNotEmpty) {
         try {
           final parsedData = _parseFCMData(message.data);
-          if (parsedData.containsKey('status') && parsedData['status'] == 'padam') {
-            _handleKebakaranPadam();
-          } else {
-            setState(() {
-              _currentNotificationData = parsedData;
-            });
-            _showKebakaranDialog();
-          }
+          print("Parsed FCM Data: $parsedData");
+
+          setState(() {
+            _currentNotificationData = parsedData;
+          });
+          _showKebakaranDialog();
         } catch (e) {
           print("Error parsing FCM data: $e");
         }
@@ -103,23 +101,19 @@ class _HomePageState extends State<HomePage> {
   Map<String, dynamic> _parseFCMData(Map<String, dynamic> data) {
     final parsedData = <String, dynamic>{};
     data.forEach((key, value) {
+      // Jika value adalah string JSON, decode
       if (value is String && (value.startsWith('{') || value.startsWith('['))) {
-        parsedData[key] = jsonDecode(value);
+        try {
+          parsedData[key] = jsonDecode(value);
+        } catch (e) {
+          throw Exception("Payload FCM tidak valid: $data");
+        }
       } else {
+        // Jika value sudah berbentuk Map, langsung gunakan
         parsedData[key] = value;
       }
     });
     return parsedData;
-  }
-
-  void _handleKebakaranPadam() {
-    Navigator.popUntil(context, (route) => route.isFirst);
-    setState(() {
-      _currentNotificationData = null;
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Kebakaran telah padam.')),
-    );
   }
 
   void _showKebakaranDialog() {
@@ -158,41 +152,50 @@ class _HomePageState extends State<HomePage> {
     final role = widget.user['role'] ?? 'Unknown';
     final idCabangPolsek = widget.user['id_polsek'];
 
-    if (role == 'Damkar') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => DamkarNavigationScreen(
-            routeData: _currentNotificationData?['coordinates'],
-            idKebakaran: _currentNotificationData?['id_kebakaran'] ?? 0,
+    try {
+      if (role == 'Damkar') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DamkarNavigationScreen(
+              routeData: _currentNotificationData?['rute']?['coordinates'] ?? [],
+              idKebakaran: _currentNotificationData?['kebakaran']?['id_kebakaran'] ?? 0,
+              lokasiKebakaran: _currentNotificationData?['kebakaran']?['lokasi'] ?? 'Tidak diketahui',
+            ),
           ),
-        ),
-      );
-    } else if (role == 'Komandan' && idCabangPolsek != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => KomandanNavigationScreen(
-            neutralizationPoints: _currentNotificationData?['data'],
-            routeData: _currentNotificationData?['coordinates'],
-            idCabangPolsek: idCabangPolsek,
+        );
+      } else if (role == 'Komandan' && idCabangPolsek != null) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => KomandanNavigationScreen(
+              neutralizationPoints: _currentNotificationData?['simpang'] ?? [],
+              routeData: _currentNotificationData?['rute']?['coordinates'] ?? [],
+              idCabangPolsek: idCabangPolsek,
+            ),
           ),
-        ),
-      );
-    } else if (role == 'Anggota') {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AnggotaNavigationScreen(
-            assignedPoint: _currentNotificationData?['data']?[0],
-            routeData: _currentNotificationData?['coordinates'],
+        );
+      } else if (role == 'Anggota') {
+        final assignedPoint = _currentNotificationData?['lokasi alat'];
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AnggotaNavigationScreen(
+              assignedPoint: assignedPoint != null
+                  ? LatLng(assignedPoint['latitude'], assignedPoint['longitude'])
+                  : null,
+              routeData: _currentNotificationData?['rute']?['coordinates'] ?? [],
+            ),
           ),
-        ),
+        );
+      }
+    } catch (e) {
+      print("Error navigating to role-specific page: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Terjadi kesalahan saat navigasi.")),
       );
     }
   }
-
-  ///////
 
   @override
   Widget build(BuildContext context) {
@@ -356,5 +359,4 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
-  
 }
