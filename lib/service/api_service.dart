@@ -5,46 +5,50 @@ class ApiService {
   final String baseUrl = 'https://careful-stunning-snake.ngrok-free.app';
 
   // Login user
-  Future<Map<String, dynamic>> loginUser(String email, String password) async {
-    final url = Uri.parse('$baseUrl/user/loginUser');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'email': email, 'password': password}),
-      );
+ Future<Map<String, dynamic>> loginUser(String email, String password) async {
+  final url = Uri.parse('$baseUrl/user/loginUser');
+  try {
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({'email': email, 'password': password}),
+    );
 
-      print("Status Code: ${response.statusCode}");
-      print("Response Body: ${response.body}");
+    print("Status Code: ${response.statusCode}");
+    print("Response Body: ${response.body}");
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
 
-        // Validasi bahwa semua properti yang dibutuhkan tersedia
-        if ((data.containsKey('id_damkar') || data.containsKey('id_polisi')) &&
-            data.containsKey('role') &&
-            data.containsKey('nama')) {
-          return {
-            'id_damkar': data['id_damkar'] ?? 0,
-            'id_polisi': data['id_polisi'] ?? 0,
-            'role': data['role'] ?? '',
-            'nama': data['nama'] ?? '',
-            'token': data['token'] ?? '',
-            // Hanya cabang yang sesuai dengan role akan diambil
-            'cabang_damkar': data['cabang_damkar'] ?? 'Damkar tidak ditemukan',
-            'cabang_polsek': data['cabang_polsek'] ?? 'Polsek tidak ditemukan',
-            'id_polsek': data['id_polsek'] ?? 0, // Tambahkan ID Polsek jika ada
-          };
-        } else {
-          throw Exception('Struktur respons tidak sesuai.');
-        }
+      // Validasi bahwa semua properti yang dibutuhkan tersedia
+      if ((data.containsKey('id_damkar') || data.containsKey('id_polisi')) &&
+          data.containsKey('role') &&
+          data.containsKey('nama')) {
+        // Return data dengan fallback untuk cabang
+        return {
+          'id_damkar': data['id_damkar'] ?? 0,
+          'id_polisi': data['id_polisi'] ?? 0,
+          'role': data['role'] ?? '',
+          'nama': data['nama'] ?? '',
+          'token': data['token'] ?? '',
+          'cabang': data['role'] == 'Damkar'
+              ? (data['cabang_damkar'] ?? 'Damkar tidak ditemukan')
+              : (data['cabang_polsek'] ?? 'Polsek tidak ditemukan'),
+          'id_polsek': data['id_polsek'] ?? 0,
+        };
       } else {
-        throw Exception('Gagal login: ${response.reasonPhrase}');
+        throw Exception('Struktur respons tidak sesuai.');
       }
-    } catch (e) {
-      throw Exception('Kesalahan login: $e');
+    } else if (response.statusCode == 401) {
+      throw Exception('Email atau password salah.');
+    } else {
+      throw Exception('Gagal login: ${response.reasonPhrase}');
     }
+  } catch (e) {
+    throw Exception('Kesalahan login: $e');
   }
+}
+
 
   // Send FCM token for Damkar
   Future<void> putTokenDamkar(int idDamkar, String token) async {

@@ -64,9 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
       // Ambil data pengguna
       int userId = response['id_damkar'] ?? response['id_polisi'] ?? 0;
       String role = response['role'];
-      String cabang = role == "Damkar"
-          ? response['cabang_damkar'] ?? 'Damkar tidak ditemukan'
-          : response['cabang_polsek'] ?? 'Polsek tidak ditemukan';
+      String cabang = response['cabang'] ?? 'Lokasi tidak ditemukan';
 
       // Tambahkan ID Polsek untuk navigasi khusus
       int idPolsek = response['id_polsek'] ?? 0;
@@ -84,9 +82,11 @@ class _LoginScreenState extends State<LoginScreen> {
       // Dapatkan FCM token dan kirim ke server
       await _getFCMTokenAndSendToServer(userId, role);
 
+      // Simpan data pengguna ke SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setBool('isLoggedIn', true);
-      prefs.setString('userData', jsonEncode(response));
+      prefs.setString('userData', jsonEncode(userData)); // Gunakan userData yang diperbarui
+      print("UserData disimpan ke SharedPreferences: $userData");
 
       // Navigasi ke halaman utama
       Navigator.pushReplacement(

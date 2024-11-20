@@ -29,11 +29,14 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+     print("Data user yang diterima di HomePage: ${widget.user}");
+
     _fetchAlatLocations();
     _fetchKebakaranHistory();
     _setupFirebaseMessaging();
   }
 
+ 
   Future<void> _fetchAlatLocations() async {
     try {
       final alatData = await _apiService.getAllAlat();
@@ -62,6 +65,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  ///////
   void _setupFirebaseMessaging() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       if (message.data.isNotEmpty) {
@@ -73,16 +77,11 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               _currentNotificationData = parsedData;
             });
+            _showKebakaranDialog();
           }
         } catch (e) {
           print("Error parsing FCM data: $e");
         }
-      }
-
-      if (message.notification != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Notifikasi: ${message.notification!.title}")),
-        );
       }
     });
 
@@ -120,6 +119,31 @@ class _HomePageState extends State<HomePage> {
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Kebakaran telah padam.')),
+    );
+  }
+
+  void _showKebakaranDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("TERJADI KEBAKARAN!!"),
+          content: const Text("Segera buka navigasi untuk penanganan kebakaran."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Tutup"),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _navigateToRoleSpecificPage();
+              },
+              child: const Text("Navigasi"),
+            ),
+          ],
+        );
+      },
     );
   }
 
