@@ -74,7 +74,7 @@ class ApiService {
       final response = await http.put(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({'id_polisi': idPolisi, 'token_user': token}),
+        body: json.encode({'id_polisi': idPolisi, 'token_user': token}), // Perbaiki dari id_damkar ke id_polisi
       );
       if (response.statusCode != 200) {
         throw Exception('Failed to update FCM token for Polisi');
@@ -83,6 +83,7 @@ class ApiService {
       throw Exception('Error updating FCM token for Polisi: $e');
     }
   }
+
 
   // Register Damkar
   Future<http.Response> registerDamkar(Map<String, dynamic> newUser) async {
