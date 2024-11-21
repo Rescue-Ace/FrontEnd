@@ -34,9 +34,10 @@ dependencies:
   flutter_dotenv: ^5.2.1
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
-  firebase_core: ^2.8.0
-  firebase_messaging: ^14.6.1
+  firebase_core: ^2.32.0
+  firebase_messaging: ^14.7.10
   shared_preferences: ^2.1.1
+  flutter_local_notifications: ^17.2.4
 
 
 

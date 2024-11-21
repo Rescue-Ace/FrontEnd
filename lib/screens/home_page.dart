@@ -3,11 +3,17 @@ import 'dart:convert';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../service/api_service.dart';
 import 'settings_screen.dart';
 import 'damkar_navigation.dart';
 import 'komandan_navigation.dart';
 import 'anggota_navigation.dart';
+
+// Fungsi top-level untuk Firebase background handler
+Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
+  print('Handling a background message: ${message.data}');
+}
 
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -26,6 +32,9 @@ class _HomePageState extends State<HomePage> {
   String? _errorMessage;
   Map<String, dynamic>? _currentNotificationData;
 
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +43,52 @@ class _HomePageState extends State<HomePage> {
     _fetchAlatLocations();
     _fetchKebakaranHistory();
     _setupFirebaseMessaging();
+    _initializeLocalNotifications();
+  }
+
+  Future<void> _initializeLocalNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('app_icon');
+    final InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: _onNotificationResponse,
+    );
+  }
+
+  void _onNotificationResponse(NotificationResponse notificationResponse) {
+    if (notificationResponse.payload != null &&
+        notificationResponse.payload == 'home_page') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => HomePage(user: widget.user)),
+      );
+    }
+  }
+
+  Future<void> _showNotification(String title, String body) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'RescueAce_fire_notification_channel',
+      'RescueAce_fire_notification',
+      channelDescription: 'This channel is used for fire alerts',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+      icon: 'app_icon',
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: 'home_page',
+    );
   }
 
   Future<void> _fetchAlatLocations() async {
@@ -76,7 +131,19 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _currentNotificationData = parsedData;
           });
-          _showKebakaranDialog();
+
+          // Cek apakah status kebakaran "padam"
+          if (_currentNotificationData?['status'] == 'padam') {
+            _showNotification("Status Kebakaran", "Kebakaran telah padam");
+            // Tampilkan dialog pop-up jika status padam
+            _showKebakaranDialog();
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Kebakaran telah padam, navigasi tidak tersedia.")),
+            );
+          } else {
+            _showNotification("Titik Penetralan", "Ada kebakaran!");
+            _showKebakaranDialog(); // Hanya muncul dialog jika status bukan 'padam'
+          }
         } catch (e) {
           print("Error parsing FCM data: $e");
         }
@@ -90,30 +157,43 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _currentNotificationData = parsedData;
           });
-          _navigateToRoleSpecificPage();
+
+          // Hanya navigasi jika status bukan "padam"
+          if (_currentNotificationData?['status'] != 'padam') {
+            _navigateToRoleSpecificPage();
+          } else {
+            // Tampilkan pesan jika statusnya padam
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Kebakaran telah padam, navigasi tidak tersedia.")),
+            );
+          }
         } catch (e) {
           print("Error parsing FCM data on app open: $e");
         }
       }
     });
+    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
+  }
+
+  Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
+    print('Handling a background message: ${message.data}');
+    // Show notification when app is in background
+    _showNotification("Titik Penetralan", "Ada kebakaran!");
   }
 
   Map<String, dynamic> _parseFCMData(Map<String, dynamic> data) {
     final parsedData = <String, dynamic>{};
 
     data.forEach((key, value) {
-      // Jika key "data" adalah JSON string, decode isinya
       if (key == 'data' && value is String) {
         try {
-          parsedData.addAll(jsonDecode(value)); // Decode JSON dalam key "data"
+          parsedData.addAll(jsonDecode(value));
         } catch (e) {
           throw Exception("Payload FCM tidak valid: $data");
         }
       } else if (value is String && (value.startsWith('{') || value.startsWith('['))) {
-        // Decode JSON string jika diperlukan
         parsedData[key] = jsonDecode(value);
       } else {
-        // Gunakan value langsung jika sudah valid
         parsedData[key] = value;
       }
     });
@@ -122,6 +202,27 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showKebakaranDialog() {
+    if (_currentNotificationData?['status'] == 'padam') {
+      // Jika status kebakaran "padam", tampilkan dialog yang memberi tahu
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Kebakaran Telah Padam"),
+            content: const Text("Kebakaran telah padam, tidak ada navigasi yang perlu dilakukan."),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text("Tutup"),
+              ),
+            ],
+          );
+        },
+      );
+      return; // Jangan tampilkan dialog kebakaran lain jika status padam
+    }
+
+    // Dialog biasa untuk kebakaran
     showDialog(
       context: context,
       builder: (context) {
@@ -152,6 +253,14 @@ class _HomePageState extends State<HomePage> {
         const SnackBar(content: Text("Tidak ada data kebakaran saat ini.")),
       );
       return;
+    }
+
+    // Cek jika status kebakaran adalah 'padam'
+    if (_currentNotificationData?['status'] == 'padam') {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Kebakaran telah padam, navigasi tidak tersedia.")),
+      );
+      return; // Batalkan navigasi
     }
 
     final role = widget.user['role'] ?? 'Unknown';
