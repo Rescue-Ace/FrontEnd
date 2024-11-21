@@ -4,8 +4,8 @@ import 'package:latlong2/latlong.dart';
 import '../service/api_service.dart';
 
 class KomandanNavigationScreen extends StatefulWidget {
-  final List<dynamic>? neutralizationPoints;
-  final List<dynamic>? routeData;
+  final List<dynamic>? neutralizationPoints; // List titik netralisasi
+  final List<dynamic>? routeData; // Rute kebakaran
   final int idCabangPolsek;
 
   const KomandanNavigationScreen({
@@ -16,26 +16,29 @@ class KomandanNavigationScreen extends StatefulWidget {
   });
 
   @override
-  _KomandanNavigationScreenState createState() => _KomandanNavigationScreenState();
+  _KomandanNavigationScreenState createState() =>
+      _KomandanNavigationScreenState();
 }
 
 class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
   final ApiService _apiService = ApiService();
-  List<Map<String, dynamic>> _anggotaList = [];
-  bool _isLoading = true;
+  List<Map<String, dynamic>> _anggotaList = []; // Daftar anggota yang dapat diutus
+  bool _isLoading = true; // Indikator memuat data anggota
+  LatLng? _selectedPoint; // Titik netralisasi yang dipilih
 
   @override
   void initState() {
     super.initState();
-    _fetchAnggotaByPolsek();
+    _fetchAnggotaByPolsek(); // Ambil anggota berdasarkan polsek
   }
 
+  // Fetch anggota dari backend berdasarkan cabang polsek
   Future<void> _fetchAnggotaByPolsek() async {
     try {
       final anggota = await _apiService.getAnggotaByCabangPolsek(widget.idCabangPolsek);
       setState(() {
-        _anggotaList = anggota;
-        _isLoading = false;
+        _anggotaList = anggota; // Simpan daftar anggota
+        _isLoading = false; // Set indikator selesai loading
       });
     } catch (e) {
       setState(() {
@@ -45,6 +48,71 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
         SnackBar(content: Text('Gagal memuat anggota: $e')),
       );
     }
+  }
+
+  // Tampilkan dialog untuk memilih anggota
+  void _onNeutralizationPointTapped(LatLng point) {
+    setState(() {
+      _selectedPoint = point; // Simpan titik netralisasi yang dipilih
+    });
+
+    _showAssignDialog(point.latitude, point.longitude); // Tampilkan dialog
+  }
+
+  void _showAssignDialog(double latitude, double longitude) {
+    int? selectedAnggota; // ID anggota yang dipilih
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Tentukan Anggota"),
+          content: _isLoading
+              ? const CircularProgressIndicator() // Jika loading, tampilkan indikator
+              : DropdownButtonFormField<int>(
+                  items: _anggotaList.map((anggota) {
+                    return DropdownMenuItem<int>(
+                      value: anggota['id_polisi'],
+                      child: Text(anggota['nama']),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    selectedAnggota = value; // Simpan anggota yang dipilih
+                  },
+                  decoration: const InputDecoration(labelText: "Pilih Anggota"),
+                ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Batal"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (selectedAnggota != null) {
+                  try {
+                    // Kirim data ke backend
+                    await _apiService.utusAnggota(selectedAnggota!, latitude, longitude);
+                    Navigator.pop(context); // Tutup dialog
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Anggota berhasil diutus ke titik ($latitude, $longitude)")),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Gagal mengutus anggota: $e")),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Pilih anggota terlebih dahulu.")),
+                  );
+                }
+              },
+              child: const Text("Konfirmasi"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -68,6 +136,12 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
             options: MapOptions(
               initialCenter: routePoints.isNotEmpty ? routePoints.first : const LatLng(-7.270607, 112.768229),
               initialZoom: 13.0,
+              onTap: (tapPosition, point) {
+                // Reset titik netralisasi yang dipilih jika area kosong ditekan
+                setState(() {
+                  _selectedPoint = null;
+                });
+              },
             ),
             children: [
               TileLayer(
@@ -92,60 +166,44 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
                     width: 40,
                     height: 40,
                     child: GestureDetector(
-                      onTap: () => _showAssignDialog(point.latitude, point.longitude),
-                      child: const Icon(Icons.location_on, color: Colors.orange, size: 40),
+                      onTap: () => _onNeutralizationPointTapped(point), // Tangani klik titik netralisasi
+                      child: Icon(
+                        Icons.location_on,
+                        color: _selectedPoint == point ? Colors.red : Colors.orange,
+                        size: 40,
+                      ),
                     ),
                   );
                 }).toList(),
               ),
             ],
           ),
+          if (_selectedPoint != null)
+            Positioned(
+              bottom: 20,
+              left: 20,
+              right: 20,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                color: Colors.white,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Titik netralisasi terpilih",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Latitude: ${_selectedPoint!.latitude}, Longitude: ${_selectedPoint!.longitude}",
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+            ),
         ],
       ),
-    );
-  }
-
-  void _showAssignDialog(double latitude, double longitude) {
-    int? selectedAnggota;
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Tentukan Anggota"),
-          content: _isLoading
-              ? const CircularProgressIndicator()
-              : DropdownButtonFormField<int>(
-                  items: _anggotaList.map((anggota) {
-                    return DropdownMenuItem<int>(
-                      value: anggota['id_polisi'],
-                      child: Text(anggota['nama']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    selectedAnggota = value;
-                  },
-                  decoration: const InputDecoration(labelText: "Pilih Anggota"),
-                ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (selectedAnggota != null) {
-                  await _apiService.utusAnggota(selectedAnggota!, latitude, longitude);
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Anggota berhasil diutus")),
-                  );
-                }
-              },
-              child: const Text("Konfirmasi"),
-            ),
-          ],
-        );
-      },
     );
   }
 }
