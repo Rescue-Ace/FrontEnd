@@ -62,13 +62,16 @@ class AnggotaNavigationScreen extends StatelessWidget {
                   markers: [
                     Marker(
                       point: assignedPointLocation,
-                      width: 40,
-                      height: 40,
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Colors.red,
-                        size: 40,
-                      ),
+                      width: 30,
+                      height: 30,
+                      child: Transform.translate(
+                        offset: Offset(0, -10),
+                        child: const Icon(
+                          Icons.location_on,
+                          color: Colors.red,
+                          size: 30,
+                        ),
+                      )
                     ),
                   ],
                 ),

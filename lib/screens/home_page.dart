@@ -292,12 +292,15 @@ class _HomePageState extends State<HomePage> {
                             markers: _alatLocations.map((alat) {
                               return Marker(
                                 point: LatLng(alat['latitude'], alat['longitude']),
-                                width: 50,
-                                height: 50,
-                                child: const Icon(
-                                  Icons.location_on,
-                                  color: Colors.red,
-                                  size: 40,
+                                width: 30,
+                                height: 30,
+                                child: Transform.translate(
+                                  offset: Offset(0, -10),
+                                  child: const Icon(
+                                    Icons.location_on,
+                                    color: Colors.red,
+                                    size: 30,
+                                  ),
                                 ),
                               );
                             }).toList(),

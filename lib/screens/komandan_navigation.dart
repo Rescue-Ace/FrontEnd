@@ -163,14 +163,17 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
                 markers: neutralizationPoints.map((point) {
                   return Marker(
                     point: point,
-                    width: 40,
-                    height: 40,
+                    width: 30,
+                    height: 30,
                     child: GestureDetector(
-                      onTap: () => _onNeutralizationPointTapped(point), // Tangani klik titik netralisasi
-                      child: Icon(
-                        Icons.location_on,
-                        color: _selectedPoint == point ? Colors.red : Colors.orange,
-                        size: 40,
+                      onTap: () => _onNeutralizationPointTapped(point),
+                      child: Transform.translate(
+                        offset: Offset(0, -10),
+                        child: Icon(
+                          Icons.location_on,
+                          color: _selectedPoint == point ? Colors.red : Colors.orange,
+                          size: 30,
+                        ),// Tangani klik titik netralisasi
                       ),
                     ),
                   );
