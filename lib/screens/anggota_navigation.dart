@@ -3,8 +3,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 class AnggotaNavigationScreen extends StatelessWidget {
-  final LatLng? assignedPoint;
-  final List<dynamic>? routeData;
+  final LatLng? assignedPoint; // Titik netralisasi yang diutus
+  final List<dynamic>? routeData; // Data rute yang diterima dari FCM
 
   const AnggotaNavigationScreen({
     super.key,
@@ -14,9 +14,13 @@ class AnggotaNavigationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Konversi data rute dari FCM ke format LatLng
     final List<LatLng> routePoints = routeData != null
         ? routeData!.map((point) => LatLng(point[1], point[0])).toList()
         : [];
+
+    // Konversi assignedPoint jika ada
+    final LatLng? assignedPointLocation = assignedPoint;
 
     return Scaffold(
       appBar: AppBar(
@@ -25,17 +29,23 @@ class AnggotaNavigationScreen extends StatelessWidget {
       ),
       body: Stack(
         children: [
+          // Peta menggunakan FlutterMap
           FlutterMap(
             options: MapOptions(
-              initialCenter: assignedPoint ?? LatLng(-7.270607, 112.768229),
+              initialCenter: assignedPointLocation ??
+                  (routePoints.isNotEmpty ? routePoints.first : LatLng(-7.270607, 112.768229)),
               initialZoom: 13.0,
             ),
             children: [
+              // Layer untuk menampilkan map tiles
               TileLayer(
                 urlTemplate:
                     "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
-                additionalOptions: const {'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g'},
+                additionalOptions: const {
+                  'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g',
+                },
               ),
+              // Layer untuk menampilkan rute kebakaran
               if (routePoints.isNotEmpty)
                 PolylineLayer(
                   polylines: [
@@ -46,16 +56,17 @@ class AnggotaNavigationScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-              if (assignedPoint != null)
+              // Layer untuk menampilkan titik assignedPoint
+              if (assignedPointLocation != null)
                 MarkerLayer(
                   markers: [
                     Marker(
-                      point: assignedPoint!,
+                      point: assignedPointLocation,
                       width: 40,
                       height: 40,
                       child: const Icon(
                         Icons.location_on,
-                        color: Colors.yellow,
+                        color: Colors.red,
                         size: 40,
                       ),
                     ),
@@ -63,18 +74,28 @@ class AnggotaNavigationScreen extends StatelessWidget {
                 ),
             ],
           ),
-          if (assignedPoint != null)
+          // Informasi titik assignedPoint
+          if (assignedPointLocation != null)
             Positioned(
               bottom: 20,
               left: 20,
               right: 20,
               child: Container(
                 padding: const EdgeInsets.all(16),
-                color: Colors.white,
-                child: const Text(
-                  "Segera menuju lokasi netralisasi.",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
+                color: const Color(0xFFA1BED6),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Anda telah diutus ke lokasi ini!",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      "Latitude: ${assignedPointLocation.latitude}, Longitude: ${assignedPointLocation.longitude}",
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ),
               ),
             ),

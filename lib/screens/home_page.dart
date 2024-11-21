@@ -181,7 +181,7 @@ class _HomePageState extends State<HomePage> {
           ),
         );
       } else if (role == 'Anggota') {
-        final assignedPoint = _currentNotificationData?['lokasi alat'];
+        final assignedPoint = _currentNotificationData?['utus'];
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -316,7 +316,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 5),
               Container(
-                height: 180,
+                height: 200,
                 decoration: BoxDecoration(
                   color: const Color(0xFFA1BED6),
                   borderRadius: BorderRadius.circular(12),
