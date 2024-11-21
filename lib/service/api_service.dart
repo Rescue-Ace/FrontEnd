@@ -281,5 +281,20 @@ class ApiService {
     }
   }
 
+  Future<http.Response> logoutUser(Map<String, dynamic> data) async {
+    final url = Uri.parse('$baseUrl/user/logoutUser');
+    try {
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(data),
+      );
+
+      return response; // Pastikan kita mengembalikan response
+    } catch (e) {
+      throw Exception('Error during logout: $e');
+    }
+  }
+
 
 }

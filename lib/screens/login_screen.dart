@@ -96,7 +96,10 @@ class _LoginScreenState extends State<LoginScreen> {
         // Simpan data pengguna ke SharedPreferences
         SharedPreferences prefs = await SharedPreferences.getInstance();
         prefs.setBool('isLoggedIn', true);
-        prefs.setString('userData', jsonEncode(userData)); // Simpan data pengguna
+        prefs.setString('userData', jsonEncode(userData));
+        // prefs.setString('role', role); // Simpan role
+        // prefs.setInt('id_polisi', idPolisi); // Simpan id_polisi
+        // prefs.setInt('id_damkar', idDamkar); // Simpan data pengguna
         print("UserData disimpan ke SharedPreferences: $userData");
 
         // Navigasi ke halaman utama
