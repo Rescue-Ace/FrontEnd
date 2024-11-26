@@ -1,6 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.protel.RescueAce">
 
+
+    <!-- Izin untuk menerima notifikasi -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+
     <application
         android:label="RescueAce"
         android:name="${applicationName}"

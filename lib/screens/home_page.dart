@@ -10,11 +10,6 @@ import 'damkar_navigation.dart';
 import 'komandan_navigation.dart';
 import 'anggota_navigation.dart';
 
-// Fungsi top-level untuk Firebase background handler
-Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
-  print('Handling a background message: ${message.data}');
-}
-
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> user;
 
@@ -68,6 +63,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Definisikan fungsi _showNotification di dalam kelas ini
   Future<void> _showNotification(String title, String body) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -177,8 +173,8 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
     print('Handling a background message: ${message.data}');
-    // Show notification when app is in background
-    _showNotification("Titik Penetralan", "Ada kebakaran!");
+    // Show notification even when app is in the background
+    _showNotification(message.notification?.title ?? 'Notifikasi', message.notification?.body ?? 'Ada kebakaran!');
   }
 
   Map<String, dynamic> _parseFCMData(Map<String, dynamic> data) {
