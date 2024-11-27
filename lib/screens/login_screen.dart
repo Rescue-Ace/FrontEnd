@@ -84,6 +84,7 @@ class _LoginScreenState extends State<LoginScreen> {
           'nama': response['nama'],
           'cabang': cabang,
           'id_polsek': idPolsek,
+          'email' : email
         };
 
         // Dapatkan FCM token dan kirim ke server
