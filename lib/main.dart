@@ -7,30 +7,63 @@ import 'screens/home_page.dart';
 import 'screens/settings_screen.dart';
 import 'screens/editprofile.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
-// Penanganan pesan Firebase saat aplikasi berjalan di latar belakang
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Log pesan untuk debugging
-  debugPrint("Background Message: ${message.notification?.title}");
-  debugPrint("Background Message Data: ${message.data}");
+  print('Handling background message: ${message.data}');
+  
+  // Menyimpan data notifikasi ke SharedPreferences agar bisa digunakan saat aplikasi dibuka kembali
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setString('notification_data', jsonEncode(message.data));
 }
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // Inisialisasi Firebase dengan error handling
+
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
-    debugPrint("Error initializing Firebase: $e");
+    print("Error initializing Firebase: $e");
   }
 
-  // Daftarkan handler untuk notifikasi latar belakang
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
+  // Menangani push notification saat aplikasi terbuka (foreground)
+  FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    print("Foreground message: ${message.notification?.title}");
+    if (message.data.isNotEmpty) {
+      _navigateToRoleSpecificPage(message.data);
+    }
+  });
+
+  // Menangani push notification saat aplikasi dibuka dari background
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    print("Opened from notification: ${message.notification?.title}");
+    if (message.data.isNotEmpty) {
+      _navigateToRoleSpecificPage(message.data);
+    }
+  });
+
   runApp(const MyApp());
+}
+
+void _navigateToRoleSpecificPage(Map<String, dynamic> notificationData) {
+  final String role = notificationData['role'] ?? 'Unknown';
+  
+  // Navigate to the appropriate screen based on the role
+  if (role == 'Damkar') {
+    // Navigate to Damkar screen
+    // Navigator.push(...);
+  } else if (role == 'Komandan') {
+    // Navigate to Komandan screen
+    // Navigator.push(...);
+  } else if (role == 'Anggota') {
+    // Navigate to Anggota screen
+    // Navigator.push(...);
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -39,25 +72,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Menghilangkan banner debug
-      title: 'Rescue Ace', // Judul aplikasi
+      debugShowCheckedModeBanner: false,
+      title: 'Rescue Ace',
       theme: ThemeData(
-        primarySwatch: Colors.blue, // Tema utama aplikasi
+        primarySwatch: Colors.blue,
       ),
-      // Rute awal aplikasi
       initialRoute: '/splash',
-      // Definisi rute aplikasi
       routes: {
         '/splash': (context) => const SplashScreen(),
         '/login': (context) => const LoginScreen(),
-        '/home': (context) => const HomePage(user: {}), // Parameter `user` default
+        '/home': (context) => const HomePage(user: {}),
         '/settings': (context) => const SettingsScreen(),
         '/edit_profile': (context) => const EditProfileScreen(),
       },
-      // Rute fallback jika rute tidak dikenal
-      onUnknownRoute: (settings) => MaterialPageRoute(
-        builder: (context) => const LoginScreen(),
-      ),
     );
   }
 }

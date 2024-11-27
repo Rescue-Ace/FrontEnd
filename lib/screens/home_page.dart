@@ -4,6 +4,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../service/api_service.dart';
 import 'settings_screen.dart';
 import 'damkar_navigation.dart';
@@ -39,6 +40,7 @@ class _HomePageState extends State<HomePage> {
     _fetchKebakaranHistory();
     _setupFirebaseMessaging();
     _initializeLocalNotifications();
+    _checkNotificationData();
   }
 
   Future<void> _initializeLocalNotifications() async {
@@ -54,16 +56,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _onNotificationResponse(NotificationResponse notificationResponse) {
-    if (notificationResponse.payload != null &&
-        notificationResponse.payload == 'home_page') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage(user: widget.user)),
-      );
+    if (notificationResponse.payload != null) {
+      _navigateToRoleSpecificPage();
     }
   }
 
-  // Definisikan fungsi _showNotification di dalam kelas ini
   Future<void> _showNotification(String title, String body) async {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
@@ -83,7 +80,7 @@ class _HomePageState extends State<HomePage> {
       title,
       body,
       platformChannelSpecifics,
-      payload: 'home_page',
+      payload: jsonEncode(_currentNotificationData),  // Payload untuk navigasi
     );
   }
 
@@ -128,17 +125,15 @@ class _HomePageState extends State<HomePage> {
             _currentNotificationData = parsedData;
           });
 
-          // Cek apakah status kebakaran "padam"
+          _showNotification("TERJADI KEBAKARAN", "Segera lakukan penanganan");
+
           if (_currentNotificationData?['status'] == 'padam') {
-            _showNotification("Status Kebakaran", "Kebakaran telah padam");
-            // Tampilkan dialog pop-up jika status padam
             _showKebakaranDialog();
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text("Kebakaran telah padam, navigasi tidak tersedia.")),
             );
           } else {
-            _showNotification("Titik Penetralan", "Ada kebakaran!");
-            _showKebakaranDialog(); // Hanya muncul dialog jika status bukan 'padam'
+            _showKebakaranDialog();
           }
         } catch (e) {
           print("Error parsing FCM data: $e");
@@ -153,28 +148,24 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _currentNotificationData = parsedData;
           });
-
-          // Hanya navigasi jika status bukan "padam"
-          if (_currentNotificationData?['status'] != 'padam') {
-            _navigateToRoleSpecificPage();
-          } else {
-            // Tampilkan pesan jika statusnya padam
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Kebakaran telah padam, navigasi tidak tersedia.")),
-            );
-          }
+          // Navigate directly to the role-specific page
+          _navigateToRoleSpecificPage();
         } catch (e) {
           print("Error parsing FCM data on app open: $e");
         }
       }
     });
+
     FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
   }
 
   Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
     print('Handling a background message: ${message.data}');
-    // Show notification even when app is in the background
-    _showNotification(message.notification?.title ?? 'Notifikasi', message.notification?.body ?? 'Ada kebakaran!');
+    if (message.data.isNotEmpty) {
+      final parsedData = _parseFCMData(message.data);
+      _currentNotificationData = parsedData;
+      await _showNotification("Status Kebakaran", "Ada kebakaran!");
+    }
   }
 
   Map<String, dynamic> _parseFCMData(Map<String, dynamic> data) {
@@ -199,7 +190,6 @@ class _HomePageState extends State<HomePage> {
 
   void _showKebakaranDialog() {
     if (_currentNotificationData?['status'] == 'padam') {
-      // Jika status kebakaran "padam", tampilkan dialog yang memberi tahu
       showDialog(
         context: context,
         builder: (context) {
@@ -215,10 +205,9 @@ class _HomePageState extends State<HomePage> {
           );
         },
       );
-      return; // Jangan tampilkan dialog kebakaran lain jika status padam
+      return;
     }
 
-    // Dialog biasa untuk kebakaran
     showDialog(
       context: context,
       builder: (context) {
@@ -251,12 +240,13 @@ class _HomePageState extends State<HomePage> {
       return;
     }
 
-    // Cek jika status kebakaran adalah 'padam'
+    var routeData = _currentNotificationData?['rute']?['coordinates'] ?? [];
+
     if (_currentNotificationData?['status'] == 'padam') {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Kebakaran telah padam, navigasi tidak tersedia.")),
       );
-      return; // Batalkan navigasi
+      return;
     }
 
     final role = widget.user['role'] ?? 'Unknown';
@@ -268,7 +258,7 @@ class _HomePageState extends State<HomePage> {
           context,
           MaterialPageRoute(
             builder: (context) => DamkarNavigationScreen(
-              routeData: _currentNotificationData?['rute']?['coordinates'] ?? [],
+              routeData: routeData,
               idKebakaran: _currentNotificationData?['kebakaran']?['id_kebakaran'] ?? 0,
               lokasiKebakaran: _currentNotificationData?['kebakaran']?['lokasi'] ?? 'Tidak diketahui',
             ),
@@ -280,7 +270,7 @@ class _HomePageState extends State<HomePage> {
           MaterialPageRoute(
             builder: (context) => KomandanNavigationScreen(
               neutralizationPoints: _currentNotificationData?['simpang'] ?? [],
-              routeData: _currentNotificationData?['rute']?['coordinates'] ?? [],
+              routeData: routeData,
               idCabangPolsek: idCabangPolsek,
             ),
           ),
@@ -294,7 +284,7 @@ class _HomePageState extends State<HomePage> {
               assignedPoint: assignedPoint != null
                   ? LatLng(assignedPoint['latitude'], assignedPoint['longitude'])
                   : null,
-              routeData: _currentNotificationData?['rute']?['coordinates'] ?? [],
+              routeData: routeData,
             ),
           ),
         );
@@ -304,6 +294,17 @@ class _HomePageState extends State<HomePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Terjadi kesalahan saat navigasi.")),
       );
+    }
+  }
+
+  Future<void> _checkNotificationData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? notificationData = prefs.getString('notification_data');
+
+    if (notificationData != null) {
+      _currentNotificationData = jsonDecode(notificationData);
+      _navigateToRoleSpecificPage();
+      prefs.remove('notification_data');
     }
   }
 
