@@ -85,7 +85,7 @@ class AnggotaNavigationScreen extends StatelessWidget {
               right: 20,
               child: Container(
                 padding: const EdgeInsets.all(16),
-                color: const Color(0xFFA1BED6),
+                color: Colors.white,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [

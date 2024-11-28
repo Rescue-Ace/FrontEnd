@@ -126,44 +126,38 @@ class ApiService {
   // Update profile for Damkar
   Future<http.Response> updateDamkarProfile(Map<String, dynamic> updatedData, int idDamkar) async {
     final url = Uri.parse('$baseUrl/user/Damkar/$idDamkar');
-    try {
-      final response = await http.put(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(updatedData),
-      );
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return response;
-      } else {
-        throw Exception('Failed to update Damkar profile: ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      throw Exception('Error updating Damkar profile: $e');
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(updatedData),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response;
+    } else {
+      throw Exception('Failed to update Damkar profile: ${response.reasonPhrase}');
     }
   }
 
   // Update profile for Polisi (Komandan / Anggota)
   Future<http.Response> updatePolisiProfile(Map<String, dynamic> updatedData, int idPolisi) async {
     final url = Uri.parse('$baseUrl/user/Polisi/$idPolisi');
-    try {
-      final response = await http.put(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode(updatedData),
-      );
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return response;
-      } else {
-        throw Exception('Failed to update Polisi profile: ${response.reasonPhrase}');
-      }
-    } catch (e) {
-      throw Exception('Error updating Polisi profile: $e');
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(updatedData),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      return response;
+    } else {
+      throw Exception('Failed to update Polisi profile: ${response.reasonPhrase}');
     }
   }
 
   // Update Password for Damkar
   Future<void> updateDamkarPassword(int idDamkar, String oldPassword, String newPassword) async {
-    final url = Uri.parse('$baseUrl/admin/updatePassword/$idDamkar');
+    final url = Uri.parse('$baseUrl/Damkar/updatePassword/$idDamkar');
     try {
       final response = await http.put(
         url,
@@ -184,7 +178,7 @@ class ApiService {
 
   // Update Password for Polisi
   Future<void> updatePolisiPassword(int idPolisi, String oldPassword, String newPassword) async {
-    final url = Uri.parse('$baseUrl/admin/updatePassword/$idPolisi');
+    final url = Uri.parse('$baseUrl/Polisi/updatePassword/$idPolisi');
     try {
       final response = await http.put(
         url,

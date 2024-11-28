@@ -98,24 +98,32 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         };
 
         try {
-          if (userData['role'] == 'Damkar') {
-            await apiService.updateDamkarProfile(updatedData, id);
+          final response = userData['role'] == 'Damkar'
+              ? await apiService.updateDamkarProfile(updatedData, id)
+              : await apiService.updatePolisiProfile(updatedData, id);
+
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            final responseData = json.decode(response.body);
+
+            // Save updated user data
+            prefs.setString('userData', json.encode(responseData['updateUser']));
+
+            // Check if the user is inactive and handle logout
+            if (responseData['updateUser']['aktif'] == false) {
+              _logout(context);
+              return;
+            }
+
+            setState(() {
+              _isLoading = false;
+            });
+
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Profile updated successfully')),
+            );
           } else {
-            await apiService.updatePolisiProfile(updatedData, id);
+            throw Exception('Failed to update profile');
           }
-
-          // After successful update, save updated data
-          prefs.setString('userData', json.encode(updatedData));
-
-          setState(() {
-            _isLoading = false;
-          });
-
-          // Navigate back or show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile updated successfully')),
-          );
-          Navigator.pop(context);
         } catch (e) {
           setState(() {
             _isLoading = false;
@@ -127,6 +135,41 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     }
   }
+
+  // Logout method (reused from SettingsScreen)
+  Future<void> _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    try {
+      final String? userDataString = prefs.getString('userData');
+      if (userDataString != null) {
+        final Map<String, dynamic> userData = jsonDecode(userDataString);
+        final String role = userData['role'];
+        final int id = role == 'Damkar' ? userData['id_damkar'] : userData['id_polisi'];
+
+        final Map<String, dynamic> requestBody = {
+          'role': role,
+          'id': id,
+        };
+
+        final ApiService apiService = ApiService();
+        await apiService.logoutUser(requestBody);
+      }
+
+      await prefs.clear();
+
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login',
+        (Route<dynamic> route) => false,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to logout: $e')),
+      );
+    }
+  }
+
 
   // Handle change password
   Future<void> _changePassword() async {
@@ -149,16 +192,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             await apiService.updatePolisiPassword(id, _oldPasswordController.text, _newPasswordController.text);
           }
 
-          setState(() {
-            _isLoading = false;
-          });
-
-          // Show success message and clear password fields
+          // Logout the user after successful password update
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password updated successfully')),
+            const SnackBar(content: Text('Password updated successfully. Logging out...')),
           );
-          _newPasswordController.clear();
-          _confirmNewPasswordController.clear();
+
+          _logout(context); // Call logout function
         } catch (e) {
           setState(() {
             _isLoading = false;
@@ -170,6 +209,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
