@@ -43,47 +43,6 @@ class _HomePageState extends State<HomePage> {
     _checkNotificationData();
   }
 
-  Future<void> _initializeLocalNotifications() async {
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('app_icon');
-    final InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-
-    await flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: _onNotificationResponse,
-    );
-  }
-
-  void _onNotificationResponse(NotificationResponse notificationResponse) {
-    if (notificationResponse.payload != null) {
-      _navigateToRoleSpecificPage();
-    }
-  }
-
-  Future<void> _showNotification(String title, String body) async {
-    const AndroidNotificationDetails androidPlatformChannelSpecifics =
-        AndroidNotificationDetails(
-      'RescueAce_fire_notification_channel',
-      'RescueAce_fire_notification',
-      channelDescription: 'This channel is used for fire alerts',
-      importance: Importance.max,
-      priority: Priority.high,
-      ticker: 'ticker',
-      icon: 'app_icon',
-    );
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(android: androidPlatformChannelSpecifics);
-
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      title,
-      body,
-      platformChannelSpecifics,
-      payload: jsonEncode(_currentNotificationData),  // Payload untuk navigasi
-    );
-  }
-
   Future<void> _fetchAlatLocations() async {
     try {
       final alatData = await _apiService.getAllAlat();
@@ -112,6 +71,53 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<void> _initializeLocalNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('app_icon');
+    final InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
+
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: _onNotificationResponse,
+    );
+  }
+
+  void _onNotificationResponse(NotificationResponse notificationResponse) {
+    if (notificationResponse.payload != null) {
+      _navigateToRoleSpecificPage();
+    }
+  }
+
+  Future<void> _showNotification(String title, String body) async {
+    // Menangani status kebakaran padam
+    if (_currentNotificationData?['status'] == 'padam') {
+      title = "Kebakaran Telah Padam"; // Judul untuk kebakaran padam
+      body = "Tidak ada tindakan yang perlu dilakukan."; // Pesan untuk kebakaran padam
+    }
+
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'RescueAce_fire_notification_channel',
+      'RescueAce_fire_notification',
+      channelDescription: 'This channel is used for fire alerts',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+      icon: 'app_icon',
+    );
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await flutterLocalNotificationsPlugin.show(
+      0,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: jsonEncode(_currentNotificationData),  // Payload untuk navigasi
+    );
+  }
+
   void _setupFirebaseMessaging() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("Raw FCM Data: ${message.data}");
@@ -125,7 +131,12 @@ class _HomePageState extends State<HomePage> {
             _currentNotificationData = parsedData;
           });
 
-          _showNotification("TERJADI KEBAKARAN", "Segera lakukan penanganan");
+          // Menampilkan notifikasi dengan status kebakaran padam atau aktif
+          if (_currentNotificationData?['status'] == 'padam') {
+            _showNotification("Kebakaran Telah Padam", "Tidak ada tindakan yang perlu dilakukan.");
+          } else {
+            _showNotification("TERJADI KEBAKARAN", "Segera lakukan penanganan");
+          }
 
           if (_currentNotificationData?['status'] == 'padam') {
             _showKebakaranDialog();
@@ -164,7 +175,13 @@ class _HomePageState extends State<HomePage> {
     if (message.data.isNotEmpty) {
       final parsedData = _parseFCMData(message.data);
       _currentNotificationData = parsedData;
-      await _showNotification("Status Kebakaran", "Ada kebakaran!");
+
+      // Jika status kebakaran padam
+      if (_currentNotificationData?['status'] == 'padam') {
+        await _showNotification("Kebakaran Telah Padam", "Tidak ada tindakan yang perlu dilakukan.");
+      } else {
+        await _showNotification("Status Kebakaran", "Ada kebakaran!");
+      }
     }
   }
 
