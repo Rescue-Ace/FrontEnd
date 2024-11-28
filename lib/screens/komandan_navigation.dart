@@ -23,6 +23,8 @@ class KomandanNavigationScreen extends StatefulWidget {
 class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
   final ApiService _apiService = ApiService();
   List<Map<String, dynamic>> _anggotaList = []; // Daftar anggota yang dapat diutus
+  Map<int, LatLng> _assignedAnggota = {}; // Map untuk menyimpan ID anggota dan titik yang diutus
+  Map<LatLng, List<String>> _anggotaPerTitik = {}; // Map untuk menyimpan nama anggota per titik
   bool _isLoading = true; // Indikator memuat data anggota
   LatLng? _selectedPoint; // Titik netralisasi yang dipilih
 
@@ -61,55 +63,99 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
 
   void _showAssignDialog(double latitude, double longitude) {
     int? selectedAnggota; // ID anggota yang dipilih
+    final LatLng currentPoint = LatLng(latitude, longitude);
+    final assignedAnggotaNames = _anggotaPerTitik[currentPoint] ?? [];
 
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: const Text("Tentukan Anggota"),
-          content: _isLoading
-              ? const CircularProgressIndicator() // Jika loading, tampilkan indikator
-              : DropdownButtonFormField<int>(
-                  items: _anggotaList.map((anggota) {
-                    return DropdownMenuItem<int>(
-                      value: anggota['id_polisi'],
-                      child: Text(anggota['nama']),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    selectedAnggota = value; // Simpan anggota yang dipilih
-                  },
-                  decoration: const InputDecoration(labelText: "Pilih Anggota"),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Tentukan Anggota"),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _isLoading
+                      ? const CircularProgressIndicator() // Jika loading, tampilkan indikator
+                      : DropdownButtonFormField<int>(
+                          items: _anggotaList.map((anggota) {
+                            return DropdownMenuItem<int>(
+                              value: anggota['id_polisi'],
+                              child: Text(anggota['nama']),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              selectedAnggota = value; // Simpan anggota yang dipilih
+                            });
+                          },
+                          decoration: const InputDecoration(labelText: "Pilih Anggota"),
+                        ),
+                  const SizedBox(height: 10),
+                  if (assignedAnggotaNames.isNotEmpty)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Anggota yang telah diutus:",
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        ...assignedAnggotaNames.map((name) => Text("- $name")).toList(),
+                      ],
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Batal"),
                 ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Batal"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (selectedAnggota != null) {
-                  try {
-                    // Kirim data ke backend
-                    await _apiService.utusAnggota(selectedAnggota!, latitude, longitude);
-                    Navigator.pop(context); // Tutup dialog
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Anggota berhasil diutus ke titik ($latitude, $longitude)")),
-                    );
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Gagal mengutus anggota: $e")),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Pilih anggota terlebih dahulu.")),
-                  );
-                }
-              },
-              child: const Text("Konfirmasi"),
-            ),
-          ],
+                ElevatedButton(
+                  onPressed: () async {
+                    if (selectedAnggota != null) {
+                      try {
+                        // Kirim data ke backend
+                        await _apiService.utusAnggota(selectedAnggota!, latitude, longitude);
+                        final selectedAnggotaName = _anggotaList
+                            .firstWhere((anggota) => anggota['id_polisi'] == selectedAnggota)['nama'];
+
+                        // Update Map untuk titik sebelumnya dan titik baru
+                        setState(() {
+                          // Hapus anggota dari titik sebelumnya
+                          if (_assignedAnggota.containsKey(selectedAnggota)) {
+                            final previousPoint = _assignedAnggota[selectedAnggota];
+                            _anggotaPerTitik[previousPoint]?.remove(selectedAnggotaName);
+                          }
+
+                          // Tambahkan anggota ke titik baru
+                          _assignedAnggota[selectedAnggota!] = currentPoint;
+                          if (!_anggotaPerTitik.containsKey(currentPoint)) {
+                            _anggotaPerTitik[currentPoint] = [];
+                          }
+                          _anggotaPerTitik[currentPoint]!.add(selectedAnggotaName);
+                        });
+
+                        Navigator.pop(context); // Tutup dialog
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Anggota berhasil diutus ke titik ($latitude, $longitude)")),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Gagal mengutus anggota: $e")),
+                        );
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Pilih anggota terlebih dahulu.")),
+                      );
+                    }
+                  },
+                  child: const Text("Konfirmasi"),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -173,7 +219,7 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
                           Icons.location_on,
                           color: _selectedPoint == point ? Colors.red : Colors.orange,
                           size: 30,
-                        ),// Tangani klik titik netralisasi
+                        ), // Tangani klik titik netralisasi
                       ),
                     ),
                   );
