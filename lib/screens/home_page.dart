@@ -268,6 +268,7 @@ class _HomePageState extends State<HomePage> {
 
     final role = widget.user['role'] ?? 'Unknown';
     final idCabangPolsek = widget.user['id_polsek'];
+    final idKebakaran = _currentNotificationData?['kebakaran']?['id_kebakaran'] ?? 0;
 
     try {
       if (role == 'Damkar') {
@@ -289,6 +290,7 @@ class _HomePageState extends State<HomePage> {
               neutralizationPoints: _currentNotificationData?['simpang'] ?? [],
               routeData: routeData,
               idCabangPolsek: idCabangPolsek,
+              idKebakaran: idKebakaran,
             ),
           ),
         );

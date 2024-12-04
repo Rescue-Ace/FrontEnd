@@ -303,26 +303,33 @@ class ApiService {
   }
 
     // Mengutus anggota ke titik tertentu
-  Future<void> utusAnggota(int idPolisi, double latitude, double longitude) async {
-    final url = Uri.parse('$baseUrl/Polisi/utusPolisi');
-    try {
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'id_polisi': idPolisi,
-          'latitude': latitude,
-          'longitude': longitude,
-        }),
-      );
+  Future<void> utusAnggota({
+      required int idPolisi,
+      required int idKebakaran,
+      required double latitude,
+      required double longitude,
+    }) async {
+      final url = Uri.parse('$baseUrl/Polisi/utusPolisi');
+      try {
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'id_polisi': idPolisi,
+            'id_kebakaran': idKebakaran, // Tambahkan id_kebakaran
+            'latitude': latitude,
+            'longitude': longitude,
+          }),
+        );
 
-      if (response.statusCode != 200) {
-        throw Exception('Gagal mengutus anggota: ${response.reasonPhrase}');
+        if (response.statusCode != 200) {
+          throw Exception('Failed to utus anggota: ${response.body}');
+        }
+      } catch (e) {
+        throw Exception('Error in utusAnggota: $e');
       }
-    } catch (e) {
-      throw Exception('Kesalahan mengutus anggota: $e');
     }
-  }
+
 
   // Mendapatkan anggota berdasarkan cabang polsek
   Future<List<Map<String, dynamic>>> getAnggotaByCabangPolsek(int idPolsek) async {

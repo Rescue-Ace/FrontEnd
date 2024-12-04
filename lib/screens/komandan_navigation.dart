@@ -7,12 +7,14 @@ class KomandanNavigationScreen extends StatefulWidget {
   final List<dynamic>? neutralizationPoints; // List titik netralisasi
   final List<dynamic>? routeData; // Rute kebakaran
   final int idCabangPolsek;
+  final int idKebakaran;
 
   const KomandanNavigationScreen({
     super.key,
     required this.neutralizationPoints,
     required this.routeData,
     required this.idCabangPolsek,
+    required this.idKebakaran,
   });
 
   @override
@@ -116,7 +118,12 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
                     if (selectedAnggota != null) {
                       try {
                         // Kirim data ke backend
-                        await _apiService.utusAnggota(selectedAnggota!, latitude, longitude);
+                        await _apiService.utusAnggota(
+                          idPolisi: selectedAnggota!,
+                          idKebakaran: widget.idKebakaran, // Kirim ID kebakaran
+                          latitude: latitude,
+                          longitude: longitude,
+                        );
                         final selectedAnggotaName = _anggotaList
                             .firstWhere((anggota) => anggota['id_polisi'] == selectedAnggota)['nama'];
 
@@ -193,7 +200,7 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
               TileLayer(
                 urlTemplate:
                     "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
-                additionalOptions: const {'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g'},
+                additionalOptions: const {'accessToken': 'your-mapbox-access-token'},
               ),
               if (routePoints.isNotEmpty)
                 PolylineLayer(
