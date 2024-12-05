@@ -297,7 +297,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         items: _cabangList.map((branch) {
                           return DropdownMenuItem<int>(
                             value: branch['id_pos_damkar'] ?? branch['id_polsek'],
-                            child: Text(branch['nama']),
+                            child: Text(
+                              branch['nama'],
+                              style: const TextStyle(fontSize: 13),),
                           );
                         }).toList(),
                         validator: (value) {
@@ -310,14 +312,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       const SizedBox(height: 20),
 
                       // Update Profile Button
-                      ElevatedButton(
-                        onPressed: _updateProfile,
-                        child: const Text('Update Profile'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF4872B1),
-                          padding: const EdgeInsets.symmetric(vertical: 15),
+                      SizedBox(
+                        width: double.infinity, // Tombol memenuhi lebar layar
+                        child: ElevatedButton(
+                          onPressed: _updateProfile,
+                          child: const Text(
+                            'Update Profile',
+                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF4872B1),
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                          ),
                         ),
                       ),
+
                       const SizedBox(height: 30),
 
                       const Divider(),
@@ -387,12 +396,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             ),
                             const SizedBox(height: 20),
 
-                            ElevatedButton(
-                              onPressed: _changePassword,
-                              child: const Text('Change Password'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF4872B1),
-                                padding: const EdgeInsets.symmetric(vertical: 15),
+                            // Change Password Button
+                            SizedBox(
+                              width: double.infinity, // Tombol memenuhi lebar layar
+                              child: ElevatedButton(
+                                onPressed: _changePassword,
+                                child: const Text(
+                                  'Change Password',
+                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF4872B1),
+                                  padding: const EdgeInsets.symmetric(vertical: 15),
+                                ),
                               ),
                             ),
                           ],
