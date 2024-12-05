@@ -10,7 +10,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
-// Handler untuk notifikasi di background atau terminated
+// Handler untuk notifikasi yang diterima saat aplikasi di background atau terminated
 Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(); // Pastikan Firebase diinisialisasi
 
@@ -19,8 +19,9 @@ Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
       // Simpan data notifikasi ke SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('notification_data', jsonEncode(message.data));
+      print("Data FCM berhasil disimpan di background: ${message.data}");
     } catch (e) {
-      print("Error handling background message: $e");
+      print("Error saat menyimpan data FCM di background: $e");
     }
   }
 }
@@ -39,15 +40,47 @@ void main() async {
   String? notificationData = prefs.getString('notification_data');
   String? userDataString = prefs.getString('userData');
 
-  Map<String, dynamic>? savedNotificationData =
-      notificationData != null ? jsonDecode(notificationData) : null;
-  Map<String, dynamic> userData =
-      userDataString != null ? jsonDecode(userDataString) : {};
+  // Jika ada data notifikasi, lakukan parsing
+  Map<String, dynamic>? savedNotificationData;
+  if (notificationData != null) {
+    try {
+      // Parsing data notifikasi menggunakan _parseFCMData
+      savedNotificationData = _parseFCMData(jsonDecode(notificationData));
+    } catch (e) {
+      print("Error parsing FCM data: $e");
+    }
+  }
 
+  // Parsing data user
+  Map<String, dynamic> userData = userDataString != null ? jsonDecode(userDataString) : {};
+
+  // Jalankan aplikasi
   runApp(MyApp(
     savedNotificationData: savedNotificationData,
     userData: userData,
   ));
+
+  // Hapus data notifikasi setelah digunakan
+  prefs.remove('notification_data');
+}
+
+// Fungsi untuk parsing data FCM
+Map<String, dynamic> _parseFCMData(Map<String, dynamic> data) {
+  final parsedData = <String, dynamic>{};
+  data.forEach((key, value) {
+    if (key == 'data' && value is String) {
+      try {
+        parsedData.addAll(jsonDecode(value));
+      } catch (e) {
+        throw Exception("Payload FCM tidak valid: $data");
+      }
+    } else if (value is String && (value.startsWith('{') || value.startsWith('['))) {
+      parsedData[key] = jsonDecode(value);
+    } else {
+      parsedData[key] = value;
+    }
+  });
+  return parsedData;
 }
 
 class MyApp extends StatelessWidget {
