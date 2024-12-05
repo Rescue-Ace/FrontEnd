@@ -226,7 +226,7 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
                       items: _cabangDamkar.map((branch) {
                         return DropdownMenuItem<int>(
                           value: branch['id_pos_damkar'], 
-                          child: Text(branch['nama'], style: const TextStyle(color: textColor)), 
+                          child: Text(branch['nama'], style: const TextStyle(color: textColor, fontSize: 13)), 
                         );
                       }).toList(),
                       onChanged: (newValue) {
