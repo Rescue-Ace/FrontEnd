@@ -13,8 +13,9 @@ import 'anggota_navigation.dart';
 
 class HomePage extends StatefulWidget {
   final Map<String, dynamic> user;
+  final Map<String, dynamic>? savedNotificationData;
 
-  const HomePage({super.key, required this.user});
+  const HomePage({super.key, required this.user, this.savedNotificationData});
 
   @override
   _HomePageState createState() => _HomePageState();
@@ -40,7 +41,14 @@ class _HomePageState extends State<HomePage> {
     _fetchKebakaranHistory();
     _setupFirebaseMessaging();
     _initializeLocalNotifications();
-    _checkNotificationData();
+    _checkNotificationData(); // Cek jika ada notifikasi tersimpan dari terminated state
+
+    if (widget.savedNotificationData != null) {
+      _currentNotificationData = widget.savedNotificationData;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToRoleSpecificPage();
+      });
+    }
   }
 
   Future<void> _fetchAlatLocations() async {
@@ -60,7 +68,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _fetchKebakaranHistory() async {
     try {
-      List<Map<String, dynamic>> history = await _apiService.getKebakaranHistory();
+      final history = await _apiService.getKebakaranHistory();
       setState(() {
         _historyKebakaran = history;
       });
@@ -79,21 +87,19 @@ class _HomePageState extends State<HomePage> {
 
     await flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
-      onDidReceiveNotificationResponse: _onNotificationResponse,
+      onDidReceiveNotificationResponse: (response) {
+        if (response.payload != null) {
+          _currentNotificationData = jsonDecode(response.payload!);
+          _navigateToRoleSpecificPage();
+        }
+      },
     );
   }
 
-  void _onNotificationResponse(NotificationResponse notificationResponse) {
-    if (notificationResponse.payload != null) {
-      _navigateToRoleSpecificPage();
-    }
-  }
-
   Future<void> _showNotification(String title, String body) async {
-    // Menangani status kebakaran padam
     if (_currentNotificationData?['status'] == 'padam') {
-      title = "Kebakaran Telah Padam"; // Judul untuk kebakaran padam
-      body = "Tidak ada tindakan yang perlu dilakukan."; // Pesan untuk kebakaran padam
+      title = "Kebakaran Telah Padam";
+      body = "Tidak ada tindakan yang perlu dilakukan.";
     }
 
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
@@ -106,6 +112,7 @@ class _HomePageState extends State<HomePage> {
       ticker: 'ticker',
       icon: 'app_icon',
     );
+
     const NotificationDetails platformChannelSpecifics =
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
@@ -114,38 +121,26 @@ class _HomePageState extends State<HomePage> {
       title,
       body,
       platformChannelSpecifics,
-      payload: jsonEncode(_currentNotificationData),  // Payload untuk navigasi
+      payload: jsonEncode(_currentNotificationData),
     );
   }
 
   void _setupFirebaseMessaging() {
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("Raw FCM Data: ${message.data}");
-
       if (message.data.isNotEmpty) {
         try {
           final parsedData = _parseFCMData(message.data);
-          print("Parsed FCM Data: $parsedData");
-
           setState(() {
             _currentNotificationData = parsedData;
           });
 
-          // Menampilkan notifikasi dengan status kebakaran padam atau aktif
           if (_currentNotificationData?['status'] == 'padam') {
             _showNotification("Kebakaran Telah Padam", "Tidak ada tindakan yang perlu dilakukan.");
           } else {
             _showNotification("TERJADI KEBAKARAN", "Segera lakukan penanganan");
           }
 
-          if (_currentNotificationData?['status'] == 'padam') {
-            _showKebakaranDialog();
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Kebakaran telah padam, navigasi tidak tersedia.")),
-            );
-          } else {
-            _showKebakaranDialog();
-          }
+          _showKebakaranDialog();
         } catch (e) {
           print("Error parsing FCM data: $e");
         }
@@ -159,35 +154,40 @@ class _HomePageState extends State<HomePage> {
           setState(() {
             _currentNotificationData = parsedData;
           });
-          // Navigate directly to the role-specific page
           _navigateToRoleSpecificPage();
         } catch (e) {
-          print("Error parsing FCM data on app open: $e");
+          print("Error handling onMessageOpenedApp: $e");
         }
       }
     });
-
-    FirebaseMessaging.onBackgroundMessage(_firebaseBackgroundHandler);
   }
 
-  Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
-    print('Handling a background message: ${message.data}');
-    if (message.data.isNotEmpty) {
-      final parsedData = _parseFCMData(message.data);
-      _currentNotificationData = parsedData;
+  Future<void> _checkNotificationData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? notificationData = prefs.getString('notification_data');
+    String? userDataString = prefs.getString('userData');
 
-      // Jika status kebakaran padam
-      if (_currentNotificationData?['status'] == 'padam') {
-        await _showNotification("Kebakaran Telah Padam", "Tidak ada tindakan yang perlu dilakukan.");
-      } else {
-        await _showNotification("Status Kebakaran", "Ada kebakaran!");
+    if (notificationData != null) {
+      try {
+        final parsedData = jsonDecode(notificationData);
+        setState(() {
+          _currentNotificationData = parsedData;
+        });
+
+        if (userDataString != null) {
+          widget.user.addAll(jsonDecode(userDataString));
+        }
+
+        _navigateToRoleSpecificPage();
+        prefs.remove('notification_data');
+      } catch (e) {
+        print("Error processing notification data: $e");
       }
     }
   }
 
   Map<String, dynamic> _parseFCMData(Map<String, dynamic> data) {
     final parsedData = <String, dynamic>{};
-
     data.forEach((key, value) {
       if (key == 'data' && value is String) {
         try {
@@ -201,7 +201,6 @@ class _HomePageState extends State<HomePage> {
         parsedData[key] = value;
       }
     });
-
     return parsedData;
   }
 
@@ -249,7 +248,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _navigateToRoleSpecificPage() {
+ void _navigateToRoleSpecificPage() {
     if (_currentNotificationData == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Tidak ada data kebakaran saat ini.")),
@@ -316,22 +315,14 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _checkNotificationData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? notificationData = prefs.getString('notification_data');
+  
 
-    if (notificationData != null) {
-      _currentNotificationData = jsonDecode(notificationData);
-      _navigateToRoleSpecificPage();
-      prefs.remove('notification_data');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    String name = widget.user['nama'] ?? 'Guest';
-    String role = widget.user['role'] ?? 'Unknown';
-    String cabang = widget.user['cabang'] ?? 'Lokasi tidak ditemukan';
+    final name = widget.user['nama'] ?? 'Guest';
+    final role = widget.user['role'] ?? 'Unknown';
+    final cabang = widget.user['cabang'] ?? 'Lokasi tidak ditemukan';
 
     return Scaffold(
       body: SingleChildScrollView(
@@ -420,7 +411,7 @@ class _HomePageState extends State<HomePage> {
                                 width: 30,
                                 height: 30,
                                 child: Transform.translate(
-                                  offset: Offset(0, -10),
+                                  offset: const Offset(0, -10),
                                   child: const Icon(
                                     Icons.location_on,
                                     color: Colors.red,
