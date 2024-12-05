@@ -348,19 +348,26 @@ class ApiService {
 
   Future<void> updateStatusKebakaran(int idKebakaran, String status) async {
     final url = Uri.parse('$baseUrl/Kebakaran/$idKebakaran');
+    print("Endpoint: $url");
+    print("Data: {status_kebakaran: $status}");
     try {
       final response = await http.put(
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({'status_kebakaran': status}),
       );
+      print("Response status: ${response.statusCode}");
+      print("Response body: ${response.body}");
+
       if (response.statusCode != 200) {
         throw Exception('Gagal memperbarui status kebakaran');
       }
     } catch (e) {
+      print("Error: $e");
       throw Exception('Kesalahan memperbarui status kebakaran: $e');
     }
   }
+
 
   Future<http.Response> logoutUser(Map<String, dynamic> data) async {
     final url = Uri.parse('$baseUrl/user/logoutUser');

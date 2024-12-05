@@ -130,6 +130,9 @@ class DamkarNavigationScreen extends StatelessWidget {
                       if (isConfirmed == true) {
                         final apiService = ApiService();
                         try {
+                          if (idKebakaran <= 0) {
+                            throw Exception("ID kebakaran tidak valid: $idKebakaran");
+                          }
                           // Update status kebakaran ke "padam"
                           await apiService.updateStatusKebakaran(idKebakaran, "padam");
                           ScaffoldMessenger.of(context).showSnackBar(
