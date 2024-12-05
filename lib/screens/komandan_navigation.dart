@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../service/api_service.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'dart:convert';
 
 class KomandanNavigationScreen extends StatefulWidget {
   final List<dynamic>? neutralizationPoints; // List titik netralisasi
@@ -34,6 +36,28 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
   void initState() {
     super.initState();
     _fetchAnggotaByPolsek(); // Ambil anggota berdasarkan polsek
+
+    // Listener untuk notifikasi FCM
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.data.isNotEmpty) {
+        try {
+          final data = message.data['data'] != null
+              ? Map<String, dynamic>.from(jsonDecode(message.data['data']))
+              : message.data;
+
+          if (data['status'] == 'padam') {
+            // Jika status "padam", tampilkan SnackBar dan tutup layar
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Kebakaran telah padam, navigasi ditutup.")),
+            );
+            Navigator.pop(context); // Tutup layar
+          }
+        } catch (e) {
+          print("Error handling FCM message: $e");
+        }
+      }
+    });
+    
   }
 
   // Fetch anggota dari backend berdasarkan cabang polsek
@@ -200,7 +224,7 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
               TileLayer(
                 urlTemplate:
                     "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
-                additionalOptions: const {'accessToken': 'your-mapbox-access-token'},
+                additionalOptions: const {'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g'},
               ),
               if (routePoints.isNotEmpty)
                 PolylineLayer(

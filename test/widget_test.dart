@@ -12,8 +12,32 @@ import 'package:RescueAce/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+    // Buat data dummy untuk userData dan savedNotificationData
+    final Map<String, dynamic> dummyUserData = {
+      'nama': 'Test User',
+      'role': 'Damkar',
+      'cabang': 'Dummy Cabang',
+    };
+
+    final Map<String, dynamic>? dummyNotificationData = {
+      'status': 'aktif',
+      'kebakaran': {
+        'id_kebakaran': 1,
+        'lokasi': 'Jl. Dummy Lokasi',
+      },
+      'rute': {
+        'coordinates': [
+          [112.794676, -7.282219],
+          [112.794700, -7.282300],
+        ],
+      },
+    };
+
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+    await tester.pumpWidget(MyApp(
+      userData: dummyUserData,
+      savedNotificationData: dummyNotificationData,
+    ));
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

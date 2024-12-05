@@ -96,6 +96,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+
   Future<void> _showNotification(String title, String body) async {
     if (_currentNotificationData?['status'] == 'padam') {
       title = "Kebakaran Telah Padam";
@@ -136,6 +137,7 @@ class _HomePageState extends State<HomePage> {
 
           if (_currentNotificationData?['status'] == 'padam') {
             _showNotification("Kebakaran Telah Padam", "Tidak ada tindakan yang perlu dilakukan.");
+            _closeAllNavigations();
           } else {
             _showNotification("TERJADI KEBAKARAN", "Segera lakukan penanganan");
           }
@@ -147,20 +149,26 @@ class _HomePageState extends State<HomePage> {
       }
     });
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      if (message.data.isNotEmpty) {
-        try {
-          final parsedData = _parseFCMData(message.data);
-          setState(() {
-            _currentNotificationData = parsedData;
-          });
+
+  FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+    if (message.data.isNotEmpty) {
+      try {
+        final parsedData = _parseFCMData(message.data);
+        setState(() {
+          _currentNotificationData = parsedData;
+        });
+
+        if (_currentNotificationData?['status'] == 'padam') {
+          _closeAllNavigations(); // Tutup semua navigasi jika padam
+        } else {
           _navigateToRoleSpecificPage();
-        } catch (e) {
-          print("Error handling onMessageOpenedApp: $e");
         }
+      } catch (e) {
+        print("Error handling onMessageOpenedApp: $e");
       }
-    });
-  }
+    }
+  });
+}
 
   Future<void> _checkNotificationData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -204,25 +212,37 @@ class _HomePageState extends State<HomePage> {
     return parsedData;
   }
 
+void _closeAllNavigations() {
+  Navigator.popUntil(context, (route) => route.isFirst);
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Kebakaran telah padam, semua navigasi ditutup.")),
+  );
+}
+
+
   void _showKebakaranDialog() {
-    if (_currentNotificationData?['status'] == 'padam') {
-      showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text("Kebakaran Telah Padam"),
-            content: const Text("Kebakaran telah padam, tidak ada navigasi yang perlu dilakukan."),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text("Tutup"),
-              ),
-            ],
-          );
-        },
-      );
-      return;
-    }
+  if (_currentNotificationData?['status'] == 'padam') {
+    // Tampilkan dialog untuk status "padam"
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Kebakaran Telah Padam"),
+          content: const Text("Kebakaran telah padam, tidak ada navigasi yang perlu dilakukan."),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context); // Tutup dialog
+                _closeAllNavigations(); // Tutup semua layar navigasi
+              },
+              child: const Text("Tutup"),
+            ),
+          ],
+        );
+      },
+    );
+    return;
+  }
 
     showDialog(
       context: context,
@@ -262,6 +282,7 @@ class _HomePageState extends State<HomePage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Kebakaran telah padam, navigasi tidak tersedia.")),
       );
+      _closeAllNavigations();
       return;
     }
 

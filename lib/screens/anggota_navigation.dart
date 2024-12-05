@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
-class AnggotaNavigationScreen extends StatelessWidget {
+class AnggotaNavigationScreen extends StatefulWidget {
   final LatLng? assignedPoint; // Titik netralisasi yang diutus
   final List<dynamic>? routeData; // Data rute yang diterima dari FCM
 
@@ -13,14 +14,45 @@ class AnggotaNavigationScreen extends StatelessWidget {
   });
 
   @override
+  _AnggotaNavigationScreenState createState() => _AnggotaNavigationScreenState();
+}
+
+class _AnggotaNavigationScreenState extends State<AnggotaNavigationScreen> {
+  @override
+  void initState() {
+    super.initState();
+
+    // Listener untuk notifikasi FCM
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      if (message.data.isNotEmpty) {
+        try {
+          final data = message.data['data'] != null
+              ? Map<String, dynamic>.from(message.data['data'])
+              : message.data;
+
+          if (data['status'] == 'padam') {
+            // Tampilkan SnackBar dan tutup layar navigasi
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Kebakaran telah padam, navigasi ditutup.")),
+            );
+            Navigator.pop(context); // Tutup layar navigasi
+          }
+        } catch (e) {
+          print("Error handling FCM message: $e");
+        }
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Konversi data rute dari FCM ke format LatLng
-    final List<LatLng> routePoints = routeData != null
-        ? routeData!.map((point) => LatLng(point[1], point[0])).toList()
+    final List<LatLng> routePoints = widget.routeData != null
+        ? widget.routeData!.map((point) => LatLng(point[1], point[0])).toList()
         : [];
 
     // Konversi assignedPoint jika ada
-    final LatLng? assignedPointLocation = assignedPoint;
+    final LatLng? assignedPointLocation = widget.assignedPoint;
 
     return Scaffold(
       appBar: AppBar(
@@ -33,7 +65,7 @@ class AnggotaNavigationScreen extends StatelessWidget {
           FlutterMap(
             options: MapOptions(
               initialCenter: assignedPointLocation ??
-                  (routePoints.isNotEmpty ? routePoints.first : LatLng(-7.270607, 112.768229)),
+                  (routePoints.isNotEmpty ? routePoints.first : const LatLng(-7.270607, 112.768229)),
               initialZoom: 13.0,
             ),
             children: [
@@ -65,13 +97,13 @@ class AnggotaNavigationScreen extends StatelessWidget {
                       width: 30,
                       height: 30,
                       child: Transform.translate(
-                        offset: Offset(0, -10),
+                        offset: const Offset(0, -10),
                         child: const Icon(
                           Icons.location_on,
                           color: Colors.red,
                           size: 30,
                         ),
-                      )
+                      ),
                     ),
                   ],
                 ),
