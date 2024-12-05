@@ -98,7 +98,7 @@ class MyApp extends StatelessWidget {
     } else if (userData.isNotEmpty) {
       initialRoute = '/home'; // Jika user sudah login, buka HomePage
     } else {
-      initialRoute = '/login'; // Jika user belum login, buka LoginScreen
+      initialRoute = '/splash'; // Jika user belum login, buka LoginScreen
     }
 
     return MaterialApp(

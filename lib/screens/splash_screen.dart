@@ -15,6 +15,12 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    _startSplashScreen();
+  }
+
+  Future<void> _startSplashScreen() async {
+    // Tambahkan delay selama 3 detik
+    await Future.delayed(const Duration(seconds: 2));
     _checkLoginStatus();
   }
 
