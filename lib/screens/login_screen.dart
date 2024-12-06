@@ -75,7 +75,6 @@ class _LoginScreenState extends State<LoginScreen> {
         int idPolisi = response['id_polisi'] ?? 0;
         String cabang = response['cabang'] ?? 'Lokasi tidak ditemukan';
         int idPolsek = response['id_polsek'] ?? 0;
-        String telp = response['telp'] ?? '';
 
         // Buat map data pengguna untuk disimpan
         Map<String, dynamic> userData = {
@@ -86,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
           'cabang': cabang,
           'id_polsek': idPolsek,
           'email' : email,
-          'telp': telp,
+          'telp': response['telp'],
         };
 
         // Dapatkan FCM token dan kirim ke server

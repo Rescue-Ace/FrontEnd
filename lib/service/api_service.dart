@@ -30,6 +30,7 @@ class ApiService {
           'id_polisi': data['id_polisi'] ?? 0,
           'role': data['role'] ?? '',
           'nama': data['nama'] ?? '',
+          'telp' : data['telp'] ?? '',
           'token': data['token'] ?? '',
           'cabang': data['role'] == 'Damkar'
               ? (data['cabang_damkar'] ?? 'Damkar tidak ditemukan')
