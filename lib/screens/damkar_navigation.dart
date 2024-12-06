@@ -105,57 +105,60 @@ class DamkarNavigationScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   // Tombol untuk update status kebakaran
-                  ElevatedButton(
-                    onPressed: () async {
-                      // Konfirmasi sebelum mengupdate status kebakaran
-                      final isConfirmed = await showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text("Konfirmasi"),
-                          content: const Text("Apakah api sudah dipadamkan?"),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context, false),
-                              child: const Text("Batal"),
-                            ),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(context, true),
-                              child: const Text("Ya"),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      // Jika konfirmasi "Ya"
-                      if (isConfirmed == true) {
-                        final apiService = ApiService();
-                        try {
-                          if (idKebakaran <= 0) {
-                            throw Exception("ID kebakaran tidak valid: $idKebakaran");
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        // Konfirmasi sebelum mengupdate status kebakaran
+                        final isConfirmed = await showDialog(
+                          context: context,
+                          builder: (context) => AlertDialog(
+                            title: const Text("Konfirmasi"),
+                            content: const Text("Apakah api sudah dipadamkan?"),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context, false),
+                                child: const Text("Batal"),
+                              ),
+                              ElevatedButton(
+                                onPressed: () => Navigator.pop(context, true),
+                                child: const Text("Ya"),
+                              ),
+                            ],
+                          ),
+                        );
+                    
+                        // Jika konfirmasi "Ya"
+                        if (isConfirmed == true) {
+                          final apiService = ApiService();
+                          try {
+                            if (idKebakaran <= 0) {
+                              throw Exception("ID kebakaran tidak valid: $idKebakaran");
+                            }
+                            // Update status kebakaran ke "padam"
+                            await apiService.updateStatusKebakaran(idKebakaran, "padam");
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text("Status kebakaran berhasil diperbarui."),
+                              ),
+                            );
+                            Navigator.popUntil(context, (route) => route.isFirst);
+                          } catch (e) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Gagal memperbarui status: $e")),
+                    
+                            );
                           }
-                          // Update status kebakaran ke "padam"
-                          await apiService.updateStatusKebakaran(idKebakaran, "padam");
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text("Status kebakaran berhasil diperbarui."),
-                            ),
-                          );
-                          Navigator.popUntil(context, (route) => route.isFirst);
-                        } catch (e) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Gagal memperbarui status: $e")),
-
-                          );
                         }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    child: const Text(
-                      "Api Sudah Dipadamkan",
-                      style: TextStyle(fontSize: 16),
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFF4872B1),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text(
+                        "Api Sudah Dipadamkan",
+                        style: TextStyle(fontSize: 16, color: Colors.white),
+                      ),
                     ),
                   ),
                 ],

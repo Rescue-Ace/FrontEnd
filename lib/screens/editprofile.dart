@@ -214,15 +214,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-        backgroundColor: const Color(0xFF4872B1),
-      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : Padding(
@@ -233,6 +224,17 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   child: Column(
                     children: [
                       const SizedBox(height: 16),
+
+                      const Text(
+                        "Edit Profile",
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF4872B1),
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
 
                       // Name Field
                       TextFormField(
