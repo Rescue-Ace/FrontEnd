@@ -202,87 +202,89 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
         ? widget.neutralizationPoints!.map((point) => LatLng(point[1], point[0])).toList()
         : [];
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Navigasi Komandan"),
-        backgroundColor: const Color(0xFFA1BED6),
-      ),
-      body: Stack(
-        children: [
-          FlutterMap(
-            options: MapOptions(
-              initialCenter: routePoints.isNotEmpty ? routePoints.first : const LatLng(-7.270607, 112.768229),
-              initialZoom: 13.0,
-              onTap: (tapPosition, point) {
-                // Reset titik netralisasi yang dipilih jika area kosong ditekan
-                setState(() {
-                  _selectedPoint = null;
-                });
-              },
-            ),
-            children: [
-              TileLayer(
-                urlTemplate:
-                    "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
-                additionalOptions: const {'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g'},
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Navigasi Komandan"),
+          backgroundColor: const Color(0xFFA1BED6),
+        ),
+        body: Stack(
+          children: [
+            FlutterMap(
+              options: MapOptions(
+                initialCenter: routePoints.isNotEmpty ? routePoints.first : const LatLng(-7.270607, 112.768229),
+                initialZoom: 13.0,
+                onTap: (tapPosition, point) {
+                  // Reset titik netralisasi yang dipilih jika area kosong ditekan
+                  setState(() {
+                    _selectedPoint = null;
+                  });
+                },
               ),
-              if (routePoints.isNotEmpty)
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: routePoints,
-                      strokeWidth: 4.0,
-                      color: Colors.blue,
-                    ),
-                  ],
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
+                  additionalOptions: const {'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g'},
                 ),
-              MarkerLayer(
-                markers: neutralizationPoints.map((point) {
-                  return Marker(
-                    point: point,
-                    width: 30,
-                    height: 30,
-                    child: GestureDetector(
-                      onTap: () => _onNeutralizationPointTapped(point),
-                      child: Transform.translate(
-                        offset: Offset(0, -10),
-                        child: Icon(
-                          Icons.location_on,
-                          color: _selectedPoint == point ? Colors.red : Colors.orange,
-                          size: 30,
-                        ), // Tangani klik titik netralisasi
+                if (routePoints.isNotEmpty)
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: routePoints,
+                        strokeWidth: 4.0,
+                        color: Colors.blue,
                       ),
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-          if (_selectedPoint != null)
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                color: Colors.white,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "Titik netralisasi terpilih",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Latitude: ${_selectedPoint!.latitude}, Longitude: ${_selectedPoint!.longitude}",
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                    ],
+                  ),
+                MarkerLayer(
+                  markers: neutralizationPoints.map((point) {
+                    return Marker(
+                      point: point,
+                      width: 30,
+                      height: 30,
+                      child: GestureDetector(
+                        onTap: () => _onNeutralizationPointTapped(point),
+                        child: Transform.translate(
+                          offset: Offset(0, -10),
+                          child: Icon(
+                            Icons.location_on,
+                            color: _selectedPoint == point ? Colors.red : Colors.orange,
+                            size: 30,
+                          ), // Tangani klik titik netralisasi
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+            if (_selectedPoint != null)
+              Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.white,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Titik netralisasi terpilih",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Latitude: ${_selectedPoint!.latitude}, Longitude: ${_selectedPoint!.longitude}",
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -54,87 +54,89 @@ class _AnggotaNavigationScreenState extends State<AnggotaNavigationScreen> {
     // Konversi assignedPoint jika ada
     final LatLng? assignedPointLocation = widget.assignedPoint;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Navigasi Anggota"),
-        backgroundColor: const Color(0xFFA1BED6),
-      ),
-      body: Stack(
-        children: [
-          // Peta menggunakan FlutterMap
-          FlutterMap(
-            options: MapOptions(
-              initialCenter: assignedPointLocation ??
-                  (routePoints.isNotEmpty ? routePoints.first : const LatLng(-7.270607, 112.768229)),
-              initialZoom: 13.0,
-            ),
-            children: [
-              // Layer untuk menampilkan map tiles
-              TileLayer(
-                urlTemplate:
-                    "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
-                additionalOptions: const {
-                  'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g',
-                },
+    return SafeArea(
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Navigasi Anggota"),
+          backgroundColor: const Color(0xFFA1BED6),
+        ),
+        body: Stack(
+          children: [
+            // Peta menggunakan FlutterMap
+            FlutterMap(
+              options: MapOptions(
+                initialCenter: assignedPointLocation ??
+                    (routePoints.isNotEmpty ? routePoints.first : const LatLng(-7.270607, 112.768229)),
+                initialZoom: 13.0,
               ),
-              // Layer untuk menampilkan rute kebakaran
-              if (routePoints.isNotEmpty)
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: routePoints,
-                      strokeWidth: 4.0,
-                      color: Colors.blue,
-                    ),
-                  ],
+              children: [
+                // Layer untuk menampilkan map tiles
+                TileLayer(
+                  urlTemplate:
+                      "https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}",
+                  additionalOptions: const {
+                    'accessToken': 'pk.eyJ1IjoibmFmaXNhcnlhZGkzMiIsImEiOiJjbTNoZTFqNjIwZDdhMmpxenhwNjR4d3drIn0.oqCkTqILhSAP5qNjKCkV2g',
+                  },
                 ),
-              // Layer untuk menampilkan titik assignedPoint
-              if (assignedPointLocation != null)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: assignedPointLocation,
-                      width: 30,
-                      height: 30,
-                      child: Transform.translate(
-                        offset: const Offset(0, -10),
-                        child: const Icon(
-                          Icons.location_on,
-                          color: Colors.red,
-                          size: 30,
+                // Layer untuk menampilkan rute kebakaran
+                if (routePoints.isNotEmpty)
+                  PolylineLayer(
+                    polylines: [
+                      Polyline(
+                        points: routePoints,
+                        strokeWidth: 4.0,
+                        color: Colors.blue,
+                      ),
+                    ],
+                  ),
+                // Layer untuk menampilkan titik assignedPoint
+                if (assignedPointLocation != null)
+                  MarkerLayer(
+                    markers: [
+                      Marker(
+                        point: assignedPointLocation,
+                        width: 30,
+                        height: 30,
+                        child: Transform.translate(
+                          offset: const Offset(0, -10),
+                          child: const Icon(
+                            Icons.location_on,
+                            color: Colors.red,
+                            size: 30,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-            ],
-          ),
-          // Informasi titik assignedPoint
-          if (assignedPointLocation != null)
-            Positioned(
-              bottom: 20,
-              left: 20,
-              right: 20,
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                color: Colors.white,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "Anda telah diutus ke lokasi ini!",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(
-                      "Latitude: ${assignedPointLocation.latitude}, Longitude: ${assignedPointLocation.longitude}",
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                    ],
+                  ),
+              ],
+            ),
+            // Informasi titik assignedPoint
+            if (assignedPointLocation != null)
+              Positioned(
+                bottom: 20,
+                left: 20,
+                right: 20,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  color: Colors.white,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text(
+                        "Anda telah diutus ke lokasi ini!",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        "Latitude: ${assignedPointLocation.latitude}, Longitude: ${assignedPointLocation.longitude}",
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

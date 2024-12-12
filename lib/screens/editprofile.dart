@@ -213,214 +213,218 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 16),
-
-                      const Text(
-                        "Edit Profile",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4872B1),
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      // Name Field
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your name';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Email Field
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: const InputDecoration(
-                          labelText: 'Email',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your email';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Phone Number Field
-                      TextFormField(
-                        controller: _telpController,
-                        decoration: const InputDecoration(
-                          labelText: 'Phone Number',
-                          border: OutlineInputBorder(),
-                        ),
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Please enter your phone number';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Dropdown for Branch Selection (Damkar/Polsek)
-                      DropdownButtonFormField<int>(
-                        decoration: const InputDecoration(
-                          labelText: 'Select Branch',
-                          border: OutlineInputBorder(),
-                        ),
-                        value: _selectedCabangId,
-                        onChanged: (newValue) {
-                          setState(() {
-                            _selectedCabangId = newValue;
-                          });
-                        },
-                        items: _cabangList.map((branch) {
-                          return DropdownMenuItem<int>(
-                            value: branch['id_pos_damkar'] ?? branch['id_polsek'],
-                            child: Text(
-                              branch['nama'],
-                              style: const TextStyle(fontSize: 13),),
-                          );
-                        }).toList(),
-                        validator: (value) {
-                          if (value == null) {
-                            return 'Please select a branch';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Update Profile Button
-                      SizedBox(
-                        width: double.infinity, // Tombol memenuhi lebar layar
-                        child: ElevatedButton(
-                          onPressed: _updateProfile,
-                          child: const Text(
-                            'Update Profile',
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+    return SafeArea(
+      child: Scaffold(
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : SizedBox.expand(
+              child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Form(
+                    key: _formKey,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 16),
+                    
+                          const Text(
+                            "Edit Profile",
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF4872B1),
+                            ),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF4872B1),
-                            padding: const EdgeInsets.symmetric(vertical: 15),
+                    
+                          const SizedBox(height: 10),
+                    
+                          // Name Field
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: const InputDecoration(
+                              labelText: 'Name',
+                              border: OutlineInputBorder(),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your name';
+                              }
+                              return null;
+                            },
                           ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      const Divider(),
-
-                      const SizedBox(height: 16),
-
-                      // Password Change Section
-                      const Text(
-                        "Ganti Password",
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF4872B1),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      Form(
-                        key: _passwordFormKey,
-                        child: Column(
-                          children: [
-                            TextFormField(
-                              controller: _oldPasswordController,
-                              obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Old Password',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your old password';
-                                }
-                                return null;
-                              },
+                          const SizedBox(height: 16),
+                    
+                          // Email Field
+                          TextFormField(
+                            controller: _emailController,
+                            decoration: const InputDecoration(
+                              labelText: 'Email',
+                              border: OutlineInputBorder(),
                             ),
-                            const SizedBox(height: 16),
-
-                            TextFormField(
-                              controller: _newPasswordController,
-                              obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: 'New Password',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your new password';
-                                }
-                                return null;
-                              },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your email';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                    
+                          // Phone Number Field
+                          TextFormField(
+                            controller: _telpController,
+                            decoration: const InputDecoration(
+                              labelText: 'Phone Number',
+                              border: OutlineInputBorder(),
                             ),
-                            const SizedBox(height: 16),
-
-                            TextFormField(
-                              controller: _confirmNewPasswordController,
-                              obscureText: true,
-                              decoration: const InputDecoration(
-                                labelText: 'Confirm Password',
-                                border: OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value != _newPasswordController.text) {
-                                  return 'Passwords do not match';
-                                }
-                                return null;
-                              },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please enter your phone number';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
+                    
+                          // Dropdown for Branch Selection (Damkar/Polsek)
+                          DropdownButtonFormField<int>(
+                            decoration: const InputDecoration(
+                              labelText: 'Select Branch',
+                              border: OutlineInputBorder(),
                             ),
-                            const SizedBox(height: 20),
-
-                            // Change Password Button
-                            SizedBox(
-                              width: double.infinity, // Tombol memenuhi lebar layar
-                              child: ElevatedButton(
-                                onPressed: _changePassword,
-                                child: const Text(
-                                  'Change Password',
-                                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                            value: _selectedCabangId,
+                            onChanged: (newValue) {
+                              setState(() {
+                                _selectedCabangId = newValue;
+                              });
+                            },
+                            items: _cabangList.map((branch) {
+                              return DropdownMenuItem<int>(
+                                value: branch['id_pos_damkar'] ?? branch['id_polsek'],
+                                child: Text(
+                                  branch['nama'],
+                                  style: const TextStyle(fontSize: 13),),
+                              );
+                            }).toList(),
+                            validator: (value) {
+                              if (value == null) {
+                                return 'Please select a branch';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                    
+                          // Update Profile Button
+                          SizedBox(
+                            width: double.infinity, // Tombol memenuhi lebar layar
+                            child: ElevatedButton(
+                              onPressed: _updateProfile,
+                              child: const Text(
+                                'Update Profile',
+                                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF4872B1),
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                              ),
+                            ),
+                          ),
+                    
+                          const SizedBox(height: 30),
+                    
+                          const Divider(),
+                    
+                          const SizedBox(height: 16),
+                    
+                          // Password Change Section
+                          const Text(
+                            "Ganti Password",
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF4872B1),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                    
+                          Form(
+                            key: _passwordFormKey,
+                            child: Column(
+                              children: [
+                                TextFormField(
+                                  controller: _oldPasswordController,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Old Password',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your old password';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF4872B1),
-                                  padding: const EdgeInsets.symmetric(vertical: 15),
+                                const SizedBox(height: 16),
+                    
+                                TextFormField(
+                                  controller: _newPasswordController,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'New Password',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your new password';
+                                    }
+                                    return null;
+                                  },
                                 ),
-                              ),
+                                const SizedBox(height: 16),
+                    
+                                TextFormField(
+                                  controller: _confirmNewPasswordController,
+                                  obscureText: true,
+                                  decoration: const InputDecoration(
+                                    labelText: 'Confirm Password',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value != _newPasswordController.text) {
+                                      return 'Passwords do not match';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                    
+                                // Change Password Button
+                                SizedBox(
+                                  width: double.infinity, // Tombol memenuhi lebar layar
+                                  child: ElevatedButton(
+                                    onPressed: _changePassword,
+                                    child: const Text(
+                                      'Change Password',
+                                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                                    ),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF4872B1),
+                                      padding: const EdgeInsets.symmetric(vertical: 15),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
             ),
+      ),
     );
   }
 }
