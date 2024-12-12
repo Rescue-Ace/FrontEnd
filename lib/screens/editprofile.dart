@@ -60,7 +60,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _cabangList = cabang;
       });
     } catch (e) {
-      print("Error loading Damkar branches: $e");
+      debugPrint("Error loading Damkar branches: $e");
     }
   }
 
@@ -72,7 +72,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         _cabangList = cabang;
       });
     } catch (e) {
-      print("Error loading Polsek branches: $e");
+      debugPrint("Error loading Polsek branches: $e");
     }
   }
 

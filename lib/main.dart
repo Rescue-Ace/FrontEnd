@@ -19,9 +19,9 @@ Future<void> _firebaseBackgroundHandler(RemoteMessage message) async {
       // Simpan data notifikasi ke SharedPreferences
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('notification_data', jsonEncode(message.data));
-      print("Data FCM berhasil disimpan di background: ${message.data}");
+      debugPrint("Data FCM berhasil disimpan di background: ${message.data}");
     } catch (e) {
-      print("Error saat menyimpan data FCM di background: $e");
+      debugPrint("Error saat menyimpan data FCM di background: $e");
     }
   }
 }
@@ -47,7 +47,7 @@ void main() async {
       // Parsing data notifikasi menggunakan _parseFCMData
       savedNotificationData = _parseFCMData(jsonDecode(notificationData));
     } catch (e) {
-      print("Error parsing FCM data: $e");
+      debugPrint("Error parsing FCM data: $e");
     }
   }
 

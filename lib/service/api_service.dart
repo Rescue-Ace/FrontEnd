@@ -14,9 +14,6 @@ class ApiService {
       body: json.encode({'email': email, 'password': password}),
     );
 
-    print("Status Code: ${response.statusCode}");
-    print("Response Body: ${response.body}");
-
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
 

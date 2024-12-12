@@ -30,20 +30,19 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       String? token = await FirebaseMessaging.instance.getToken();
       if (token != null) {
-        print("Mengirim FCM Token: $token untuk Role: $role");
 
         if (role == "Damkar" && idDamkar > 0) {
           await _apiService.putTokenDamkar(idDamkar, token);
         } else if ((role == "Komandan" || role == "Anggota") && idPolisi > 0) {
           await _apiService.putTokenPolisi(idPolisi, token);
         } else {
-          print("Role atau ID tidak valid. Token tidak dikirim.");
+          debugPrint("Role atau ID tidak valid. Token tidak dikirim.");
         }
       } else {
-        print("Gagal mendapatkan FCM token.");
+        debugPrint("Gagal mendapatkan FCM token.");
       }
     } catch (e) {
-      print("Error saat mengirim FCM token: $e");
+      debugPrint("Error saat mengirim FCM token: $e");
     }
   }
 
@@ -102,7 +101,6 @@ class _LoginScreenState extends State<LoginScreen> {
         // prefs.setString('role', role); // Simpan role
         // prefs.setInt('id_polisi', idPolisi); // Simpan id_polisi
         // prefs.setInt('id_damkar', idDamkar); // Simpan data pengguna
-        print("UserData disimpan ke SharedPreferences: $userData");
 
         // Navigasi ke halaman utama
         Navigator.pushReplacement(

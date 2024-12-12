@@ -33,15 +33,12 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
   void _loadCabangDamkar() async {
     try {
       List<Map<String, dynamic>> cabang = await apiService.getCabangDamkar();
-      // ignore: avoid_print
-      print("Cabang Damkar data: $cabang"); 
       setState(() {
         _cabangDamkar = cabang;
         _isLoading = false;
       });
     } catch (e) {
-      // ignore: avoid_print
-      print("Error loading Damkar branches: $e");
+      debugPrint("Error loading Damkar branches: $e");
       setState(() {
         _isLoading = false;
       });
@@ -58,8 +55,6 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
         'password': _passwordController.text,
       };
 
-      // ignore: avoid_print
-      print("Data dikirim: $newUser");
 
       try {
         final response = await apiService.registerDamkar(newUser);
@@ -91,10 +86,10 @@ class _RegisterDamkarState extends State<RegisterDamkar> {
           );
         }
       } catch (e) {
-        print('Registration failed: $e');
+        debugPrint('Registration failed: $e');
       }
     } else {
-      print('Password tidak cocok');
+      debugPrint('Password tidak cocok');
     }
   }
 

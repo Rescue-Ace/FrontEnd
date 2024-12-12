@@ -27,9 +27,9 @@ class SettingsScreen extends StatelessWidget {
         // Panggil endpoint logout
         final ApiService apiService = ApiService();
         await apiService.logoutUser(requestBody);
-        print('Logout berhasil');
+        debugPrint('Logout berhasil');
       } else {
-        print('Tidak ada data user yang ditemukan di SharedPreferences.');
+        debugPrint('Tidak ada data user yang ditemukan di SharedPreferences.');
       }
 
       // Hapus data dari SharedPreferences
@@ -42,7 +42,7 @@ class SettingsScreen extends StatelessWidget {
         (Route<dynamic> route) => false,
       );
     } catch (e) {
-      print('Error saat logout: $e');
+      debugPrint('Error saat logout: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal logout: $e')),
       );

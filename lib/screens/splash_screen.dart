@@ -42,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
               : (user['cabang_polsek'] ?? 'Polsek tidak ditemukan');
         }
 
-        print("UserData dibaca dari SharedPreferences: $user");
+        debugPrint("UserData dibaca dari SharedPreferences: $user");
 
         // Navigasi ke HomePage dengan data user
         Navigator.pushReplacement(
@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen> {
         );
       }
     } catch (e) {
-      print("Error saat memeriksa login status: $e");
+      debugPrint("Error saat memeriksa login status: $e");
       // Kembali ke LoginScreen jika terjadi error
       Navigator.pushReplacement(
         context,

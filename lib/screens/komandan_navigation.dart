@@ -53,7 +53,7 @@ class _KomandanNavigationScreenState extends State<KomandanNavigationScreen> {
             Navigator.pop(context); // Tutup layar
           }
         } catch (e) {
-          print("Error handling FCM message: $e");
+          debugPrint("Error handling FCM message: $e");
         }
       }
     });

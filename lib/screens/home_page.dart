@@ -35,7 +35,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    print("Data user yang diterima di HomePage: ${widget.user}");
 
     _fetchAlatLocations();
     _fetchKebakaranHistory();
@@ -144,7 +143,7 @@ class _HomePageState extends State<HomePage> {
 
           _showKebakaranDialog();
         } catch (e) {
-          print("Error parsing FCM data: $e");
+          debugPrint("Error parsing FCM data: $e");
         }
       }
     });
@@ -164,7 +163,7 @@ class _HomePageState extends State<HomePage> {
           _navigateToRoleSpecificPage();
         }
       } catch (e) {
-        print("Error handling onMessageOpenedApp: $e");
+        debugPrint("Error handling onMessageOpenedApp: $e");
       }
     }
   });
@@ -189,7 +188,7 @@ class _HomePageState extends State<HomePage> {
         _navigateToRoleSpecificPage();
         prefs.remove('notification_data');
       } catch (e) {
-        print("Error processing notification data: $e");
+        debugPrint("Error processing notification data: $e");
       }
     }
   }
@@ -329,7 +328,7 @@ void _closeAllNavigations() {
         );
       }
     } catch (e) {
-      print("Error navigating to role-specific page: $e");
+      debugPrint("Error navigating to role-specific page: $e");
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Terjadi kesalahan saat navigasi.")),
       );

@@ -37,7 +37,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
         _isLoading = false;
       });
     } catch (e) {
-      print("Error loading Cabang Polsek: $e");
+      debugPrint("Error loading Cabang Polsek: $e");
       setState(() {
         _isLoading = false;
       });
@@ -55,7 +55,6 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
         'password': _passwordController.text,
       };
 
-      print("Data dikirim: $newUser");
 
       try {
         final response = await apiService.registerPolisi(newUser);
@@ -69,7 +68,7 @@ class _RegisterPolisiState extends State<RegisterPolisi> {
           _showErrorDialog("Registration failed. Please try again.");
         }
       } catch (e) {
-        print('Registration failed: $e');
+        debugPrint('Registration failed: $e');
         _showErrorDialog("Registration failed. Please try again.");
       }
     } else {
