@@ -150,23 +150,53 @@ class _HomePageState extends State<HomePage> {
 
 
   FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-    if (message.data.isNotEmpty) {
-      try {
-        final parsedData = _parseFCMData(message.data);
-        setState(() {
-          _currentNotificationData = parsedData;
-        });
+    debugPrint("onMessageOpenedApp triggered with message: ${message.data}");
 
-        if (_currentNotificationData?['status'] == 'padam') {
-          _closeAllNavigations(); // Tutup semua navigasi jika padam
-        } else {
-          _navigateToRoleSpecificPage();
-        }
-      } catch (e) {
-        debugPrint("Error handling onMessageOpenedApp: $e");
+    if (message.data.isEmpty) {
+      debugPrint("No data in message. Falling back to default behavior.");
+      return;
+    }
+
+    try {
+      final parsedData = _parseFCMData(message.data);
+      debugPrint("Parsed data: $parsedData");
+
+      setState(() {
+        _currentNotificationData = parsedData;
+      });
+
+      if (_currentNotificationData?['status'] == 'padam') {
+        debugPrint("Status padam detected. Closing navigations.");
+        _closeAllNavigations(); // Tutup semua navigasi jika padam
+      } else {
+        debugPrint("Navigating to role-specific page.");
+        _navigateToRoleSpecificPage();
+      }
+    } catch (e) {
+      debugPrint("Error handling onMessageOpenedApp: $e");
+    }
+  });
+
+  // Tambahkan untuk aplikasi dalam state terminated
+  FirebaseMessaging.instance.getInitialMessage().then((RemoteMessage? message) {
+    if (message != null && message.data.isNotEmpty) {
+      debugPrint("getInitialMessage triggered with message: ${message.data}");
+      final parsedData = _parseFCMData(message.data);
+
+      setState(() {
+        _currentNotificationData = parsedData;
+      });
+
+      if (_currentNotificationData?['status'] == 'padam') {
+        debugPrint("Status padam detected on initial message.");
+        _closeAllNavigations();
+      } else {
+        debugPrint("Navigating to role-specific page on initial message.");
+        _navigateToRoleSpecificPage();
       }
     }
   });
+
 }
 
   Future<void> _checkNotificationData() async {
